@@ -1,3 +1,9 @@
+# CMake
+CMakeFiles/
+CMakeCache.txt
+CMakeScripts/
+build/
+
 # Gutenberg files from script
 archive/
 
