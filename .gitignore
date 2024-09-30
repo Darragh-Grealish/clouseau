@@ -4,6 +4,8 @@ CMakeCache.txt
 CMakeScripts/
 build/
 
+.cache/
+
 # Gutenberg files from script
 archive/
 
