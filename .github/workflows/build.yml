@@ -36,5 +36,11 @@ jobs:
     - name: Build with CMake
       run: cmake --build build
 
-    - name: Run tests
+    - name: Run tests based on windows or unix
+      if: matrix.os == 'windows-latest'
+      run: ctest --test-dir build -C Debug --output-on-failure
+      else:
       run: ctest --test-dir build
+
+ 
+
