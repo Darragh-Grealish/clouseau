@@ -1,15 +1,16 @@
-#include "cli.h"
+#include "cli.hpp"
 #include <cassert>
 #include <functional>
 #include <iostream>
 #include <sstream>
 
 // NOTE: Dummy cmd 
-std::string testCommand(std::vector<std::string> args) {
+void testCommand(std::vector<std::string> args) {
   if (args.empty()) {
-    return "No arguments provided.";
+    std::cout << "No arguments provided" << std::endl;
+    return;
   }
-  return "Received arguments: " + args[0];
+  std::cout << "Received arguments: " << args[0] << std::endl;
 }
 
 // NOTE: Redirect cout to a buffer to capture output 
@@ -17,7 +18,7 @@ std::string captureOutput(std::function<void()> func) {
   std::ostringstream buffer;
   std::streambuf *oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
 
-  func(); // Call the function to capture output
+  func(); // Call output producer 
 
   std::cout.rdbuf(oldCoutBuffer); // Restore original buffer
   return buffer.str();            // Return the captured output

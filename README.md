@@ -29,7 +29,8 @@ make
 
 ```bash
 cd build
-./clouseau
+./clouseau index ../archive ../archive/index.csv
+./clouseau search ../archive/index.csv
 ```
 
 ## Tests
