@@ -8,7 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(include)
 
-add_executable(clouseau src/main.cpp src/cli.cpp src/indexer.cpp)
+add_executable(clouseau src/main.cpp src/cli.cpp)
 
 enable_testing()
 add_executable(test_cli tests/test_cli.cpp src/cli.cpp)

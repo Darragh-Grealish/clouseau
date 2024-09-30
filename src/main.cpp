@@ -1,5 +1,4 @@
 #include "cli.hpp"
-#include "indexer.hpp"
 
 #include <iostream>
 
@@ -15,8 +14,6 @@ void index_handler(std::vector<std::string> args) {
   if (args.size() < 2) {
     std::cerr << "Usage: index <input directory> <index path>" << std::endl;
   }
-  Indexer indexer(args[0], args[1]);
-  indexer.index();
 
   std::cout << "Indexing " << args[0] << " to " << args[1] << std::endl;
 }
