@@ -1,6 +1,9 @@
 # clouseau
 
+[![C++ Build](https://github.com/Darragh-Grealish/clouseau/actions/workflows/build.yml/badge.svg)](https://github.com/Darragh-Grealish/clouseau/actions/workflows/build.yml)
+
 Document repository search engine written in C++.
+Using CMake, ctest, C++11 and Project Gutenberg.
 
 ## Document repository retrieval
 
@@ -25,6 +28,14 @@ make
 ## Run
 
 ```bash
+cd build
 ./clouseau
+```
+
+## Tests
+
+```bash
+cd build
+ctest
 ```
 
