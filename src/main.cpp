@@ -1,27 +1,30 @@
-#include "cli.h"
+#include "cli.hpp"
+#include "indexer.hpp"
 
-std::string search_handler(std::vector<std::string> args) {
-  if (args.size() == 0) {
-    return "Usage: search <query>";
+#include <iostream>
+
+void search_handler(std::vector<std::string> args) {
+  if (args.size() < 1) {
+    std::cerr << "Usage: search <file name>" << std::endl;
   }
 
-  return "Searching for: " + args[0];
+  std::cout << "Searching for " << args[0] << std::endl;
 }
 
-std::string index_handler(std::vector<std::string> args) {
-  if (args.size() == 0) {
-    return "Usage: index <path to archive directory>";
+void index_handler(std::vector<std::string> args) {
+  if (args.size() < 2) {
+    std::cerr << "Usage: index <input directory> <index path>" << std::endl;
   }
+  Indexer indexer(args[0], args[1]);
+  indexer.index();
 
-  return "Indexing dir: " + args[0];
+  std::cout << "Indexing " << args[0] << " to " << args[1] << std::endl;
 }
 
 int main(int argc, char *argv[]) {
   CLI cli("clouseau", argc, argv);
-
   cli.add_cmd("search", Cmd{"Search for a file", search_handler});
   cli.add_cmd("index", Cmd{"Index a directory", index_handler});
-
   cli.run();
 
   return 0;
