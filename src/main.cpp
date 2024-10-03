@@ -3,16 +3,19 @@
 #include <iostream>
 
 void search_handler(std::vector<std::string> args) {
-  if (args.size() < 1) {
+  std::cout << args.size() << std::endl;
+  if (args.size() != 1) {
     std::cerr << "Usage: search <file name>" << std::endl;
+    return;
   }
 
   std::cout << "Searching for " << args[0] << std::endl;
 }
 
 void index_handler(std::vector<std::string> args) {
-  if (args.size() < 2) {
+  if (args.size() != 2) {
     std::cerr << "Usage: index <input directory> <index path>" << std::endl;
+    return;
   }
 
   std::cout << "Indexing " << args[0] << " to " << args[1] << std::endl;
