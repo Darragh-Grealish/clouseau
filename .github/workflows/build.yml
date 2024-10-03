@@ -18,6 +18,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        submodules: true
 
     - name: Install dependencies on Ubuntu and macOS
       if: matrix.os != 'windows-latest'
