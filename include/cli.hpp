@@ -1,15 +1,14 @@
 #ifndef CLI_H
 #define CLI_H
 
-#include <functional>
+#include "array_list.hpp"
 #include <iostream>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 struct Cmd {
   std::string description;
-  std::function<void(std::vector<std::string>)> fn;
+  std::function<void(ArrayList<std::string>)> fn;
 };
 
 class CLI {
@@ -23,7 +22,7 @@ public:
 
     for (int i = 1; i < argc;
          i++) {                // NOTE: skip first arg as its the program name
-      args.push_back(argv[i]); // NOTE: FIFO
+      args.add(argv[i]);
     }
   };
 
@@ -44,20 +43,19 @@ public:
       return;
     }
 
-    auto cmd = cmds.find(args[0]);
+    auto cmd = cmds.find(args.get(0));
     if (cmd == cmds.end()) {
-      std::cout << "Command not found: " << args[0] << std::endl;
+      std::cout << "Command not found: " << args.get(0) << std::endl;
       print_help();
       return;
     }
 
-    std::vector<std::string> cmd_args(args.begin() + 1, args.end());
-    cmd->second.fn(cmd_args);
+    cmd->second.fn(args);
   };
 
 private:
   std::string name;
-  std::vector<std::string> args;
+  ArrayList<std::string> args;
   std::unordered_map<std::string, Cmd> cmds;
 };
 

@@ -1,24 +1,27 @@
 #include "cli.hpp"
-
+#include "array_list.hpp"
 #include <iostream>
 
-void search_handler(std::vector<std::string> args) {
-  std::cout << args.size() << std::endl;
-  if (args.size() != 1) {
-    std::cerr << "Usage: search <file name>" << std::endl;
+void search_handler(ArrayList<std::string> args) {
+
+  std::cout << "search_handler called with " << args.size() << " arguments." << std::endl;
+  if (args.size() != 2) {
+    std::cerr << "Usage: search <index path>" << std::endl;
     return;
   }
 
-  std::cout << "Searching for " << args[0] << std::endl;
+  std::cout << "Searching for " << args.get(1) << std::endl;
+
+  return;
 }
 
-void index_handler(std::vector<std::string> args) {
+void index_handler(ArrayList<std::string> args) {
   if (args.size() != 2) {
     std::cerr << "Usage: index <input directory> <index path>" << std::endl;
     return;
   }
 
-  std::cout << "Indexing " << args[0] << " to " << args[1] << std::endl;
+  std::cout << "Indexing " << args.get(1) << " to " << args.get(2) << std::endl;
 }
 
 int main(int argc, char *argv[]) {
