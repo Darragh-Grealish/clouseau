@@ -33,7 +33,7 @@ jobs:
         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' || true
 
     - name: Configure with CMake
-      run: cmake -S . -B build
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build with CMake
       run: cmake --build build
