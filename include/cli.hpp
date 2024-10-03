@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <functional>
 
 struct Cmd {
   std::string description;
