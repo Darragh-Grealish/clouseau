@@ -15,15 +15,15 @@ add_subdirectory(googletest)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 include_directories(include)
-add_executable(clouseau src/main.cpp) 
+add_executable(clouseau src/main.cpp src/cli.cpp src/array_list.cpp) 
 enable_testing()
 
 # TEST: ArrayList implementation
-add_executable(test_array_list tests/test_array_list.cpp)
+add_executable(test_array_list tests/test_array_list.cpp src/array_list.cpp)
 target_link_libraries(test_array_list gtest gtest_main)
 add_test(NAME test_array_list COMMAND test_array_list)
 
 # TEST: CLI implementation
-add_executable(test_cli tests/test_cli.cpp)
+add_executable(test_cli tests/test_cli.cpp src/cli.cpp)
 target_link_libraries(test_cli gtest gtest_main)
 add_test(NAME test_cli COMMAND test_cli)

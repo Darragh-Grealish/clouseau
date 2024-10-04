@@ -1,6 +1,4 @@
-#ifndef ARRAY_LIST_H
-#define ARRAY_LIST_H
-
+#pragma once
 #include <stdexcept>
 
 template <typename T> class ArrayList {
@@ -54,5 +52,3 @@ private:
   int capacity;
   T *data;
 };
-
-#endif // ARRAY_LIST_H
