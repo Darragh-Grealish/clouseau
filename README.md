@@ -15,6 +15,12 @@ pip install -r requirements.txt
 python download_gutenberg.py
 ```
 
+## Getting Started
+
+```bash
+git submodule update --init --recursive
+```
+
 ## Build
 
 ```bash
