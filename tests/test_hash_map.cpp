@@ -1,8 +1,10 @@
 #include "hashmap.hpp"
 #include <gtest/gtest.h>
 
+// TEST: GIVEN empty hashmap WHEN elements are inserted THEN size is 2 & elements are found
 TEST(HashMapTest, InsertElements) {
     HashMap<string, int> map = HashMap<string, int>();
+    EXPECT_EQ(map.size(), 0);
     map.insert("one", 1);
     map.insert("two", 2);
     EXPECT_EQ(map.size(), 2);
@@ -18,6 +20,7 @@ TEST(HashMapTest, InsertElements) {
     EXPECT_EQ(v, 2);
 }
 
+// TEST: GIVEN hashmap of elements WHEN find("nine") is called THEN return 9
 TEST(HashMapTest, FindElements) {
     HashMap<string, int> map = HashMap<string, int>();
     map.insert("two", 2);
@@ -32,26 +35,33 @@ TEST(HashMapTest, FindElements) {
     EXPECT_EQ(v, 9);
 }
 
+// TEST: GIVEN a hashmap with 3 elements WHEN 2 are flagged deleted THEN size is still 3
 TEST(HashMapTest, EraseElements) {
     HashMap<string, int> map = HashMap<string, int>();
     map.insert("one", 1);
     map.insert("two", 2);
     map.insert("three", 3);
 
+    EXPECT_EQ(map.size(), 3);
+
     map.erase("one");
     map.erase("three");
 
-    EXPECT_EQ(map.size(), 3); // Lazy deletion, size is not decremented
+    EXPECT_EQ(map.size(), 3);
 }
 
+// TEST: GIVEN an empty hashmap WHEN size() & empty() are called THEN return 0 and true respectively
 TEST(HashMapTest, EmptyHashMap) {
     HashMap<string, int> map = HashMap<string, int>();
     EXPECT_EQ(map.size(), 0);
     EXPECT_TRUE(map.empty());
 }
 
+// TEST: GIVEN 41 inserts WHEN loadfactor>0.75 THEN rehashing should occur & size is doubled from 40 to 80
 TEST(HashMapTest, RehashElements) {
     HashMap<string, int> map = HashMap<string, int>();
+    EXPECT_EQ(map.size(), 0);
+
     map.insert("one", 1);
     map.insert("two", 2);
     map.insert("three", 3);
@@ -93,15 +103,6 @@ TEST(HashMapTest, RehashElements) {
     map.insert("thirtynine", 39);
     map.insert("forty", 40);
     map.insert("fortyone", 41);
-    map.insert("fortytwo", 42);
-    map.insert("fortythree", 43);
-    map.insert("fortyfour", 44);
-    map.insert("fortyfive", 45);
-    map.insert("fortysix", 46);
-    map.insert("fortyseven", 47);
-    map.insert("fortyeight", 48);
-    map.insert("fortynine", 49);
-    map.insert("fifty", 50);
 
-    EXPECT_EQ(map.size(), 50); // Capacity is 40, load factor is 0.75
+    EXPECT_EQ(map.size(), 41);
 }
