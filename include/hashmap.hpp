@@ -18,6 +18,8 @@ public:
 
 template <typename K, typename V> class HashMap {
 public:
+    class HashIterator;
+
     HashNode<K, V>** arr;
     int capacity;
     int mapsize;
@@ -33,18 +35,13 @@ public:
             arr[i] = NULL;
     }
 
-    // int firstHash(K key) { return key % capacity; }
-
-    // int secondHash(K key) { return (7 - (key % 7)); }
-
-    // Hash function for strings
     int firstHash(const K& key) {
-        size_t hash = std::hash<K>()(key);  // Correct way to use std::hash
+        size_t hash = std::hash<K>()(key); 
         return hash % capacity;
     }
 
     int secondHash(const K& key) {
-        size_t hash = std::hash<K>()(key);  // Correct way to use std::hash
+        size_t hash = std::hash<K>()(key); 
         return (7 - (hash % 7));
     }
 
@@ -108,23 +105,20 @@ public:
         return V();
     }
 
-    V find(const K& key) {
+    HashIterator find(const K& key) {
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
-        int counter = 0;
 
-        while (arr[hash1] != NULL) { 
-            // stop infinite loop
-            if (counter > capacity) { return V(); } // capacity can be replaced with size, if size-- not in erase()
-            counter++;
-
-            if (arr[hash1]->key == key){
-                return arr[hash1]->value;
+        while (arr[hash1] != NULL) {
+            if (arr[hash1]->key == key) {
+                return HashIterator(&arr[hash1], &arr[capacity]);
             }
             hash1 = (hash1 + hash2) % capacity;
         }
-        return V();
+
+        return end();
     }
+
 
     V& operator[](const K& key) {
         int hash1 = firstHash(key);
@@ -135,23 +129,27 @@ public:
         }
 
         if (arr[hash1] == NULL) {
-            arr[hash1] = new HashNode<K, V>(key, V()); // Create a new node if key doesn't exist
+            arr[hash1] = new HashNode<K, V>(key, V()); 
             mapsize++;
         }
 
         return arr[hash1]->value;
     }   
 
-    class iterator {
+    class HashIterator {
     public:
         HashNode<K, V>** current;
         HashNode<K, V>** end;
 
-        iterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {}
+        HashIterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {}
 
-        bool operator!=(const iterator& other) const {
+        bool operator!=(const HashIterator& other) const {
             return current != other.current;
         }
+
+        bool operator==(const HashIterator& other) const {
+            return current == other.current;  
+        }   
 
         void operator++() {
             do {
@@ -164,17 +162,16 @@ public:
         }
     };
 
-    iterator begin() {
+    HashIterator begin() {
         for (int i = 0; i < capacity; i++) {
             if (arr[i] != nullptr) {
-                return iterator(&arr[i], &arr[capacity]);
+                return HashIterator(&arr[i], &arr[capacity]);
             }
         }
         return end();
     }
 
-    iterator end() {
-        return iterator(&arr[capacity], &arr[capacity]);
+    HashIterator end() {
+        return HashIterator(&arr[capacity], &arr[capacity]);
     }
-
 };
