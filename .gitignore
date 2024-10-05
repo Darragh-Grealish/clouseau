@@ -3,12 +3,12 @@ CMakeFiles/
 CMakeCache.txt
 CMakeScripts/
 build/
+.vscode/
 
 .cache/
 
 # Gutenberg files from script
 archive/
-.vscode/
 
 # Prerequisites
 *.d
