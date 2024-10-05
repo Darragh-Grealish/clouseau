@@ -1,4 +1,5 @@
 #include "cli.hpp"
+#include "indexer.hpp"
 #include "array_list.hpp"
 #include <iostream>
 
@@ -16,12 +17,14 @@ void search_handler(ArrayList<std::string> args) {
 }
 
 void index_handler(ArrayList<std::string> args) {
-  if (args.size() != 2) {
+  if (args.size() != 3) {
     std::cerr << "Usage: index <input directory> <index path>" << std::endl;
     return;
   }
 
-  std::cout << "Indexing " << args.get(1) << " to " << args.get(2) << std::endl;
+  Indexer indexer(args.get(1), args.get(2));
+  indexer.index_directory();
+  indexer.serialize_index();
 }
 
 int main(int argc, char *argv[]) {
