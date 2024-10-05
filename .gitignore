@@ -8,6 +8,7 @@ build/
 
 # Gutenberg files from script
 archive/
+.vscode/
 
 # Prerequisites
 *.d
