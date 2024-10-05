@@ -259,7 +259,7 @@ TEST(IndexerTest, SerializeIndexWithValidIndex) {
   indexer.serialize_index();
 
   // Expected output format in the index file
-  std::string expected_output = "total file1 count1 file2 count2 ...\n"
+  std::string expected_output = "word total file1 count1 file2 count2 ...\n"
                                 "file 2 file1.txt 1 file2.txt 1\n"
                                 "test 4 file1.txt 1 file2.txt 3\n";
 
@@ -290,7 +290,7 @@ TEST(IndexerTest, SerializeIndexWithEmptyIndex) {
   indexer.serialize_index();
 
   // Expected output format in the index file
-  std::string expected_output = "total file1 count1 file2 count2 ...\n";
+  std::string expected_output = "word total file1 count1 file2 count2 ...\n";
 
   // Read the output file and compare it with the expected output
   std::string actual_output = read_file(index_file);
@@ -334,7 +334,7 @@ TEST(IndexerTest, SerializeIndexWithMultipleFiles) {
   indexer.serialize_index();
 
   // Expected output format in the index file
-  std::string expected_output = "total file1 count1 file2 count2 ...\n"
+  std::string expected_output = "word total file1 count1 file2 count2 ...\n"
                                 "data 1 file2.txt 1\n"
                                 "file 2 file1.txt 1 file2.txt 1\n"
                                 "test 5 file1.txt 1 file2.txt 4\n";
