@@ -21,28 +21,22 @@ python download_gutenberg.py
 git submodule update --init --recursive
 ```
 
-## Build
+## Usage
 
 ```bash
-mkdir build
+mkdir -p build
 cd build
 
+# Build
 cmake ..
 make
-```
 
-## Run
+# Test
+make test
 
-```bash
-cd build
+# Run
 ./clouseau index ../archive ../archive/index.csv
 ./clouseau search ../archive/index.csv
-```
 
-## Tests
-
-```bash
-cd build
-ctest
 ```
 
