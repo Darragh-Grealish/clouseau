@@ -15,28 +15,22 @@ pip install -r requirements.txt
 python download_gutenberg.py
 ```
 
-## Build
+## Usage
 
 ```bash
-mkdir build
+mkdir -p build
 cd build
 
+# Build
 cmake ..
 make
-```
 
-## Run
+# Test
+make test
 
-```bash
-cd build
+# Run
 ./clouseau index ../archive ../archive/index.csv
 ./clouseau search ../archive/index.csv
-```
 
-## Tests
-
-```bash
-cd build
-ctest
 ```
 
