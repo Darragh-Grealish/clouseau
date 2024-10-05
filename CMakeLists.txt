@@ -27,3 +27,8 @@ add_test(NAME test_array_list COMMAND test_array_list)
 add_executable(test_cli tests/test_cli.cpp src/cli.cpp)
 target_link_libraries(test_cli gtest gtest_main)
 add_test(NAME test_cli COMMAND test_cli)
+
+# TEST: HashTable implementation
+add_executable(test_hash_map tests/test_hash_map.cpp)
+target_link_libraries(test_hash_map gtest gtest_main)
+add_test(NAME test_hash_map COMMAND test_hash_map)

@@ -18,8 +18,6 @@ public:
 
 template <typename K, typename V> class HashMap {
 public:
-    class HashIterator;
-
     HashNode<K, V>** arr;
     int capacity;
     int mapsize;
@@ -105,21 +103,6 @@ public:
         return V();
     }
 
-    HashIterator find(const K& key) {
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
-
-        while (arr[hash1] != NULL) {
-            if (arr[hash1]->key == key) {
-                return HashIterator(&arr[hash1], &arr[capacity]);
-            }
-            hash1 = (hash1 + hash2) % capacity;
-        }
-
-        return end();
-    }
-
-
     V& operator[](const K& key) {
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
@@ -135,6 +118,7 @@ public:
 
         return arr[hash1]->value;
     }   
+
 
     class HashIterator {
     public:
@@ -173,5 +157,18 @@ public:
 
     HashIterator end() {
         return HashIterator(&arr[capacity], &arr[capacity]);
+    }
+
+    HashIterator find(const K& key) {
+        int hash1 = firstHash(key);
+        int hash2 = secondHash(key);
+
+        while (arr[hash1] != NULL) {
+            if (arr[hash1]->key == key) {
+                return HashIterator(&arr[hash1], &arr[capacity]);
+            }
+            hash1 = (hash1 + hash2) % capacity;
+        }
+        return end();
     }
 };
