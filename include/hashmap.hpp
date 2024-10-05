@@ -1,6 +1,4 @@
 #pragma once
-#include <new>      
-#include <string>
 #include <functional>
 using namespace std;
 
