@@ -198,7 +198,6 @@ TEST(IndexerTest, IndexDirectory) {
 
   Indexer indexer(temp_dir, "index.txt");
   indexer.index_directory();
-  
 
   // expect the opposite order of the files
 
@@ -239,31 +238,25 @@ TEST(IndexerTest, SerializeIndexWithValidIndex) {
   std::string test_directory = "./test_dir";
   std::filesystem::create_directory(test_directory);
 
-  // Create dummy files to populate the index
   create_temp_file(test_directory + "/file1.txt", "This is a test file.");
   create_temp_file(test_directory + "/file2.txt",
                    "Another test file with test data.");
 
-  // Create an Indexer instance and manually populate the index
   std::string index_file = "./test_index.txt";
   Indexer indexer(test_directory, index_file);
 
-  // Manually populate the index with sample data
   indexer.set_row("test", Frequency{4, ArrayList<FileFrequency>{
                                            FileFrequency{"file1.txt", 1},
                                            FileFrequency{"file2.txt", 3}}});
   indexer.set_row("file", Frequency{2, ArrayList<FileFrequency>{
                                            FileFrequency{"file1.txt", 1},
                                            FileFrequency{"file2.txt", 1}}});
-  // Call serialize_index to write the index to the file
   indexer.serialize_index();
 
-  // Expected output format in the index file
   std::string expected_output = "word total file1 count1 file2 count2 ...\n"
                                 "file 2 file1.txt 1 file2.txt 1\n"
                                 "test 4 file1.txt 1 file2.txt 3\n";
 
-  // Read the output file and compare it with the expected output
   std::string actual_output = read_file(index_file);
 
   // WARNING: Non-deterministic order of words in the index file (OS dependent)
@@ -271,7 +264,6 @@ TEST(IndexerTest, SerializeIndexWithValidIndex) {
   std::sort(expected_output.begin(), expected_output.end());
   EXPECT_EQ(actual_output, expected_output);
 
-  // Clean up
   std::filesystem::remove_all(test_directory);
   std::filesystem::remove(index_file);
 }
@@ -282,17 +274,13 @@ TEST(IndexerTest, SerializeIndexWithEmptyIndex) {
   std::string test_directory = "./test_dir";
   std::filesystem::create_directory(test_directory);
 
-  // Create an Indexer instance
   std::string index_file = "./test_index.txt";
   Indexer indexer(test_directory, index_file);
 
-  // Call serialize_index with an empty index
   indexer.serialize_index();
 
-  // Expected output format in the index file
   std::string expected_output = "word total file1 count1 file2 count2 ...\n";
 
-  // Read the output file and compare it with the expected output
   std::string actual_output = read_file(index_file);
 
   // WARNING: Non-deterministic order of words in the index file (OS dependent)
@@ -300,7 +288,6 @@ TEST(IndexerTest, SerializeIndexWithEmptyIndex) {
   std::sort(expected_output.begin(), expected_output.end());
   EXPECT_EQ(actual_output, expected_output);
 
-  // Clean up
   std::filesystem::remove_all(test_directory);
   std::filesystem::remove(index_file);
 }
@@ -311,16 +298,13 @@ TEST(IndexerTest, SerializeIndexWithMultipleFiles) {
   std::string test_directory = "./test_dir";
   std::filesystem::create_directory(test_directory);
 
-  // Create dummy files
   create_temp_file(test_directory + "/file1.txt", "This is a test file.");
   create_temp_file(test_directory + "/file2.txt",
                    "Another test file with more test data.");
 
-  // Create an Indexer instance and manually populate the index
   std::string index_file = "./test_index.txt";
   Indexer indexer(test_directory, index_file);
 
-  // Populate the index with more data
   indexer.set_row("test", Frequency{5, ArrayList<FileFrequency>{
                                            FileFrequency{"file1.txt", 1},
                                            FileFrequency{"file2.txt", 4}}});
@@ -330,20 +314,20 @@ TEST(IndexerTest, SerializeIndexWithMultipleFiles) {
   indexer.set_row("data", Frequency{1, ArrayList<FileFrequency>{
                                            FileFrequency{"file2.txt", 1}}});
 
-  // Call serialize_index
   indexer.serialize_index();
 
-  // Expected output format in the index file
   std::string expected_output = "word total file1 count1 file2 count2 ...\n"
                                 "data 1 file2.txt 1\n"
                                 "file 2 file1.txt 1 file2.txt 1\n"
                                 "test 5 file1.txt 1 file2.txt 4\n";
 
-  // Read the output file and compare it with the expected output
   std::string actual_output = read_file(index_file);
+
+  // WARNING: Non-deterministic order of words in the index file (OS dependent)
+  std::sort(actual_output.begin(), actual_output.end());
+  std::sort(expected_output.begin(), expected_output.end());
   EXPECT_EQ(actual_output, expected_output);
 
-  // Clean up
   std::filesystem::remove_all(test_directory);
   std::filesystem::remove(index_file);
 }

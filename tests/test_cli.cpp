@@ -1,7 +1,8 @@
 #include "cli.hpp"
 #include <gtest/gtest.h>
 
-// TEST: GIVEN a command with no arguments WHEN the command is executed THEN it should print "No arguments provided"
+// TEST: GIVEN a command with no arguments WHEN the command is executed THEN it
+// should print "No arguments provided"
 void testCommand(ArrayList<std::string> args) {
   if (args.isEmpty()) {
     std::cout << "No arguments provided" << std::endl;
@@ -10,7 +11,8 @@ void testCommand(ArrayList<std::string> args) {
   std::cout << "Received arguments: " << args.get(1) << std::endl;
 }
 
-// TEST: GIVEN a CLI with a command WHEN the command is run with arguments THEN it should print the correct argument
+// TEST: GIVEN a CLI with a command WHEN the command is run with arguments THEN
+// it should print the correct argument
 TEST(CliTest, CommandExecution) {
   const char *argv[] = {"my_program", "test", "arg1"};
   CLI cli("my_program", 3, const_cast<char **>(argv));
@@ -24,7 +26,8 @@ TEST(CliTest, CommandExecution) {
   EXPECT_EQ(result, "Received arguments: arg1\n");
 }
 
-// TEST: GIVEN a CLI with no command specified WHEN the help command is invoked THEN it should print the available commands
+// TEST: GIVEN a CLI with no command specified WHEN the help command is invoked
+// THEN it should print the available commands
 TEST(CliTest, HelpPrinting) {
   const char *argv[] = {"my_program"};
   CLI cli("my_program", 1, const_cast<char **>(argv));
@@ -41,7 +44,8 @@ TEST(CliTest, HelpPrinting) {
   EXPECT_EQ(result, expectedOutput);
 }
 
-// TEST: GIVEN a CLI with no matching command WHEN an unknown command is entered THEN it should print a "Command not found" error and show available commands
+// TEST: GIVEN a CLI with no matching command WHEN an unknown command is entered
+// THEN it should print a "Command not found" error and show available commands
 TEST(CliTest, CommandNotFound) {
   const char *argv[] = {"my_program", "unknown"};
   CLI cli("my_program", 2, const_cast<char **>(argv));
@@ -57,4 +61,3 @@ TEST(CliTest, CommandNotFound) {
       "[args...]\nCommands:\n  test - A test command\n";
   EXPECT_EQ(result, expectedOutput);
 }
-
