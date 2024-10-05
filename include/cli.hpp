@@ -2,7 +2,7 @@
 
 #include "array_list.hpp"
 #include <string>
-#include <unordered_map>
+#include "hashmap.hpp"
 #include <functional>
 
 struct Cmd {
@@ -27,5 +27,5 @@ public:
 private:
   std::string name;
   ArrayList<std::string> args;
-  std::unordered_map<std::string, Cmd> cmds;
+  HashMap<std::string, Cmd> cmds;
 };

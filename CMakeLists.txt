@@ -33,7 +33,13 @@ add_executable(test_cli tests/test_cli.cpp src/cli.cpp)
 target_link_libraries(test_cli gtest gtest_main)
 gtest_discover_tests(test_cli)
 
+# TEST: HashTable implementation
+add_executable(test_hash_map tests/test_hash_map.cpp)
+target_link_libraries(test_hash_map gtest gtest_main)
+gtest_discover_tests(test_hash_map)
+
 # TEST: Indexer implementation
 add_executable(test_indexer tests/test_indexer.cpp src/indexer.cpp)
 target_link_libraries(test_indexer gtest gtest_main)
 gtest_discover_tests(test_indexer)
+

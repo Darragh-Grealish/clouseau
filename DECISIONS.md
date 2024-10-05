@@ -19,3 +19,4 @@ Using the `index` command, the user can index the documents in the `archive` dir
 ## Data Structures
 
 1. ArrayList - our implementation of vector using a fixed array that resizes once full to 2x.
+2. HashMap - implemented using Open Adressing, using Double Hashing for collision prevention and Lazy Deletion. Array is rehashed & size is doubled when loadfactor > 0.75.
