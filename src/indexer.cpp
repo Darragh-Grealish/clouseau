@@ -4,8 +4,10 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <mutex>
 #include <string>
-
+#include <thread>
+#include <vector>
 Indexer::Indexer(std::string directory, std::string indexFile) {
   this->directory = directory;
   this->indexFile = indexFile;
@@ -63,16 +65,42 @@ std::unordered_map<std::string, int> Indexer::index_file(std::string file) {
 }
 
 void Indexer::index_directory() {
-  for (std::string file : files) {
-    auto word_count = index_file(file);
-    for (auto const &pair : word_count) {
-      if (index.find(pair.first) == index.end()) {
-        index[pair.first] = Frequency{
-            pair.second, ArrayList<FileFrequency>{{file, pair.second}}};
-      } else {
-        index[pair.first].total += pair.second;
-        index[pair.first].files.add(FileFrequency{file, pair.second});
+  unsigned int num_threads = std::thread::hardware_concurrency();
+  if (num_threads == 0)
+    num_threads = 2; // WARNING: Default to 2 threads when core info n/a
+
+  // NOTE: Chunk files into #cores groups i.e number of available threads
+  std::vector<std::vector<std::string>> file_chunks(num_threads);
+  for (size_t i = 0; i < files.size(); ++i) {
+    file_chunks[i % num_threads].push_back(files.get(i));
+  }
+
+  // NOTE: Anonymous function to index a chunk of files' content
+  auto index_chunk = [this](const std::vector<std::string> &chunk) {
+    for (const std::string &file : chunk) {
+      auto word_count = index_file(file);
+      std::lock_guard<std::mutex> lock(index_mutex);
+
+      for (const auto &pair : word_count) {
+        if (index.find(pair.first) == index.end()) {
+          index[pair.first] = Frequency{
+              pair.second, ArrayList<FileFrequency>{{file, pair.second}}};
+        } else {
+          index[pair.first].total += pair.second;
+          index[pair.first].files.add(FileFrequency{file, pair.second});
+        }
       }
+    }
+  }; // WARNING: Mutex auto released here
+
+  std::vector<std::thread> threads;
+  for (const auto &chunk : file_chunks) {
+    threads.emplace_back(index_chunk, chunk);
+  }
+
+  for (auto &thread : threads) {
+    if (thread.joinable()) {
+      thread.join();
     }
   }
 }
@@ -82,6 +110,7 @@ void Indexer::serialize_index() {
   index_file << "word total file1 count1 file2 count2 ..." << std::endl;
   for (auto const &pair : index) {
     index_file << pair.first << " " << pair.second.total;
+
     for (int i = 0; i < pair.second.files.size(); i++) {
       index_file << " " << pair.second.files.get(i).file << " "
                  << pair.second.files.get(i).count;

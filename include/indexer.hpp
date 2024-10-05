@@ -1,6 +1,7 @@
 #pragma once
 
 #include "array_list.hpp"
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -36,7 +37,7 @@ public:
   // NOTE: Serializes the index to a file (clouseau.idx)
   void serialize_index();
 
-  // NOTE: Set index value 
+  // NOTE: Set index value
   void set_row(std::string word, Frequency freq);
 
 private:
@@ -46,6 +47,7 @@ private:
   std::string indexFile;
   ArrayList<std::string> files;
 
+  std::mutex index_mutex;
   // TODO: Implement a trie for autocomplete
   // Trie trie;
 };
