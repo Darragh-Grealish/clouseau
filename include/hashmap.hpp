@@ -31,7 +31,9 @@ public:
             arr[i] = NULL;
     }
 
-    int hashCode(K key) { return key % capacity; }
+    int firstHash(K key) { return key % capacity; }
+
+    int secondHash(K key) { return (7 - (key % 7)); }
 
     int size() { return mapsize; }
 
@@ -60,58 +62,56 @@ public:
     }
 
     void insertNode(K key, V value) {
-        if ((float)mapsize / capacity >= loadFactor) { rehash(); }
+        if ((float)size / capacity >= loadFactor) { rehash(); }
 
         HashNode<K, V>* temp = new HashNode<K, V>(key, value);
-        int hashIndex = hashCode(key);
+        int hash1 = firstHash(key);
+        int hash2 = secondHash(key);
 
-        // Linear Probing
-        while (arr[hashIndex] != NULL && arr[hashIndex]->key != key && arr[hashIndex]->key != -1) {
-            hashIndex++;
-            hashIndex %= capacity; // wrap around
+        while (arr[hash1] != NULL && arr[hash1]->key != key && arr[hash1]->key != -1) {
+            hash1 = (hash1 + hash2) % capacity; 
         }
 
-        if (arr[hashIndex] == NULL || arr[hashIndex]->key == -1) { mapsize++; }
-        arr[hashIndex] = temp; // insert pair
+        if (arr[hash1] == NULL || arr[hash1]->key == -1) { size++; }
+        arr[hash1] = temp; // insert pair
     }
 
     V deleteNode(int key) {
         // Apply hash function
         // to find index for given key
-        int hashIndex = hashCode(key);
+        int hash1 = firstHash(key);
+        int hash2 = secondHash(key);
 
-        while (arr[hashIndex] != NULL) {
-            if (arr[hashIndex]->key == key) {
-                HashNode<K, V>* temp = arr[hashIndex];
-                arr[hashIndex] = new HashNode<K, V>(key, -1);
+        while (arr[hash1] != NULL) {
+            if (arr[hash1]->key == key) {
+                HashNode<K, V>* temp = arr[hash1];
+                arr[hash1] = new HashNode<K, V>(key, -1);
 
-                // If reducing the mapsize every time we delete a node and flag -1
-                // The true mapsize of the map will be incorrect as nodes are flagged not removed
-                // Or should we reduce mapsize in our implementation?
-                // mapsize--;  
+                // If reducing the size every time we delete a node and flag -1
+                // The true size of the map will be incorrect as nodes are flagged not removed
+                // Or should we reduce size in our implementation?
+                // size--;  
                 return temp->value;
             }
-            hashIndex++;
-            hashIndex %= capacity;
+            hash1 = (hash1 + hash2) % capacity;
         }
-
         return -1;
     }
 
     V get(int key) {
-        int hashIndex = hashCode(key);
+        int hash1 = firstHash(key);
+        int hash2 = secondHash(key);
         int counter = 0;
 
-        while (arr[hashIndex] != NULL) { 
+        while (arr[hash1] != NULL) { 
             // stop infinite loop
-            if (counter > capacity) { return -1; } // capacity can be replaced with mapsize, if mapsize-- not in deleteNode()
+            if (counter > capacity) { return -1; } // capacity can be replaced with size, if size-- not in deleteNode()
             counter++;
 
-            if (arr[hashIndex]->key == key){
-                return arr[hashIndex]->value;
+            if (arr[hash1]->key == key){
+                return arr[hash1]->value;
             }
-            hashIndex++;
-            hashIndex %= capacity;
+            hash1 = (hash1 + hash2) % capacity;
         }
         return -1;
     }
