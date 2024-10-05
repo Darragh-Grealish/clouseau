@@ -1,5 +1,7 @@
 #pragma once
-#include <new>       
+#include <new>      
+#include <string>
+#include <functional>
 using namespace std;
 
 template <typename K, typename V> class HashNode {
@@ -31,13 +33,24 @@ public:
             arr[i] = NULL;
     }
 
-    int firstHash(K key) { return key % capacity; }
+    // int firstHash(K key) { return key % capacity; }
 
-    int secondHash(K key) { return (7 - (key % 7)); }
+    // int secondHash(K key) { return (7 - (key % 7)); }
+
+    // Hash function for strings
+    int firstHash(const K& key) {
+        size_t hash = std::hash<K>()(key);  // Correct way to use std::hash
+        return hash % capacity;
+    }
+
+    int secondHash(const K& key) {
+        size_t hash = std::hash<K>()(key);  // Correct way to use std::hash
+        return (7 - (hash % 7));
+    }
 
     int size() { return mapsize; }
 
-    bool isEmpty() { return mapsize == 0; }
+    bool empty() { return mapsize == 0; }
 
     void rehash() {
         int oldCapacity = capacity;
@@ -49,43 +62,40 @@ public:
             arr[i] = NULL;
         }
 
-        mapsize = 0; // Reset mapsize, will be re-incremented in insertNode
+        mapsize = 0; // Reset mapsize, will be re-incremented in insert()
 
         // Insert old -> new array
         for (int i = 0; i < oldCapacity; i++) {
-            if (oldArr[i] != NULL && oldArr[i]->key != -1) {
-                insertNode(oldArr[i]->key, oldArr[i]->value);
+            if (oldArr[i] != NULL && !oldArr[i]->key.empty()) {
+                insert(oldArr[i]->key, oldArr[i]->value);
             }
         }
-
         delete[] oldArr;
     }
 
-    void insertNode(K key, V value) {
-        if ((float)size / capacity >= loadFactor) { rehash(); }
+    void insert(const K& key, const V& value) {
+        if ((float)mapsize / capacity >= loadFactor) { rehash(); }
 
         HashNode<K, V>* temp = new HashNode<K, V>(key, value);
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
-        while (arr[hash1] != NULL && arr[hash1]->key != key && arr[hash1]->key != -1) {
+        while (arr[hash1] != NULL && arr[hash1]->key != key && !arr[hash1]->key.empty()) {
             hash1 = (hash1 + hash2) % capacity; 
         }
 
-        if (arr[hash1] == NULL || arr[hash1]->key == -1) { size++; }
+        if (arr[hash1] == NULL || arr[hash1]->key.empty()) { mapsize++; }
         arr[hash1] = temp; // insert pair
     }
 
-    V deleteNode(int key) {
-        // Apply hash function
-        // to find index for given key
+    V erase(const K& key) {
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
         while (arr[hash1] != NULL) {
             if (arr[hash1]->key == key) {
                 HashNode<K, V>* temp = arr[hash1];
-                arr[hash1] = new HashNode<K, V>(key, -1);
+                arr[hash1] = new HashNode<K, V>("", V());
 
                 // If reducing the size every time we delete a node and flag -1
                 // The true size of the map will be incorrect as nodes are flagged not removed
@@ -95,17 +105,17 @@ public:
             }
             hash1 = (hash1 + hash2) % capacity;
         }
-        return -1;
+        return V();
     }
 
-    V get(int key) {
+    V find(const K& key) {
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
         int counter = 0;
 
         while (arr[hash1] != NULL) { 
             // stop infinite loop
-            if (counter > capacity) { return -1; } // capacity can be replaced with size, if size-- not in deleteNode()
+            if (counter > capacity) { return V(); } // capacity can be replaced with size, if size-- not in erase()
             counter++;
 
             if (arr[hash1]->key == key){
@@ -113,14 +123,58 @@ public:
             }
             hash1 = (hash1 + hash2) % capacity;
         }
-        return -1;
+        return V();
     }
 
-    void display() {
+    V& operator[](const K& key) {
+        int hash1 = firstHash(key);
+        int hash2 = secondHash(key);
+
+        while (arr[hash1] != NULL && arr[hash1]->key != key) {
+            hash1 = (hash1 + hash2) % capacity;
+        }
+
+        if (arr[hash1] == NULL) {
+            arr[hash1] = new HashNode<K, V>(key, V()); // Create a new node if key doesn't exist
+            mapsize++;
+        }
+
+        return arr[hash1]->value;
+    }   
+
+    class iterator {
+    public:
+        HashNode<K, V>** current;
+        HashNode<K, V>** end;
+
+        iterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {}
+
+        bool operator!=(const iterator& other) const {
+            return current != other.current;
+        }
+
+        void operator++() {
+            do {
+                current++;
+            } while (current != end && (*current) == nullptr);
+        }
+
+        HashNode<K, V>& operator*() {
+            return **current;
+        }
+    };
+
+    iterator begin() {
         for (int i = 0; i < capacity; i++) {
-            if (arr[i] != NULL && arr[i]->key != -1) {
-                cout << "key = " << arr[i]->key << "  value = " << arr[i]->value << endl;
+            if (arr[i] != nullptr) {
+                return iterator(&arr[i], &arr[capacity]);
             }
         }
+        return end();
     }
+
+    iterator end() {
+        return iterator(&arr[capacity], &arr[capacity]);
+    }
+
 };
