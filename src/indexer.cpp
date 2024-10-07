@@ -1,6 +1,7 @@
 #include "indexer.hpp"
 #include "array_list.hpp"
 #include "chunk.hpp"
+#include "hashmap.hpp"
 #include <cctype>
 #include <filesystem>
 #include <fstream>
@@ -49,8 +50,8 @@ ArrayList<std::string> Indexer::file_to_words(std::string file_path) {
   return words;
 }
 
-std::unordered_map<std::string, int> Indexer::index_file(std::string file) {
-  std::unordered_map<std::string, int> word_count;
+HashMap<std::string, int> Indexer::index_file(std::string file) {
+  HashMap<std::string, int> word_count;
   ArrayList<std::string> words = file_to_words(file);
 
   for (std::string word : words) {
@@ -80,7 +81,7 @@ void Indexer::index_directory() {
 
   auto index_chunk = [&](Chunk chunk) {
     for (int i = chunk.start; i < chunk.end; i++) {
-      std::unordered_map<std::string, int> word_count =
+      HashMap<std::string, int> word_count =
           index_file(files.get(i));
       for (auto const &pair : word_count) {
         std::lock_guard<std::mutex> lock(index_mutex);

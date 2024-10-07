@@ -1,9 +1,9 @@
 #pragma once
 
+#include "hashmap.hpp"
 #include "array_list.hpp"
 #include <mutex>
 #include <string>
-#include <unordered_map>
 
 struct FileFrequency {
   std::string file;
@@ -23,7 +23,7 @@ public:
   ArrayList<std::string> file_to_words(std::string file_path);
 
   // NOTE: Returns a map of words to their frequency
-  std::unordered_map<std::string, int> index_file(std::string file);
+  HashMap<std::string, int> index_file(std::string file);
 
   // NOTE: Indexes all files in the directory and serializes the index
   void index_directory();
@@ -42,7 +42,7 @@ public:
 
 private:
   // NOTE: Word -> Frequency pairs
-  std::unordered_map<std::string, Frequency> index;
+  HashMap<std::string, Frequency> index;
   std::string directory;
   std::string indexFile;
   ArrayList<std::string> files;
