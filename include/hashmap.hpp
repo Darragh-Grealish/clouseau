@@ -1,5 +1,7 @@
 #pragma once
 #include <functional>
+#include <utility>
+
 using namespace std;
 
 template <typename K, typename V> class HashNode {
@@ -12,7 +14,6 @@ public:
         this->key = key;
     }
 };
-
 
 template <typename K, typename V> class HashMap {
 public:
@@ -117,56 +118,55 @@ public:
         return arr[hash1]->value;
     }   
 
-
-    class HashIterator {
+    class HashMapIterator {
     public:
         HashNode<K, V>** current;
         HashNode<K, V>** end;
 
-        HashIterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {}
+        HashMapIterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {
+            while (current != end && (*current) == nullptr) {
+                ++current;
+            }
+        }
 
-        bool operator!=(const HashIterator& other) const {
+        bool operator!=(const HashMapIterator& other) const {
             return current != other.current;
         }
 
-        bool operator==(const HashIterator& other) const {
+        bool operator==(const HashMapIterator& other) const {
             return current == other.current;  
         }   
 
         void operator++() {
             do {
-                current++;
+                ++current;
             } while (current != end && (*current) == nullptr);
         }
 
-        HashNode<K, V>& operator*() {
-            return **current;
+        std::pair<K, V> operator*() {
+            return {(*current)->key, (*current)->value};
         }
     };
 
-    HashIterator begin() {
-        for (int i = 0; i < capacity; i++) {
-            if (arr[i] != nullptr) {
-                return HashIterator(&arr[i], &arr[capacity]);
-            }
-        }
-        return end();
+    HashMapIterator begin() {
+        return HashMapIterator(arr, arr + capacity);
     }
 
-    HashIterator end() {
-        return HashIterator(&arr[capacity], &arr[capacity]);
+    HashMapIterator end() {
+        return HashMapIterator(arr + capacity, arr + capacity);
     }
 
-    HashIterator find(const K& key) {
+    HashMapIterator find(const K& key) {
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
         while (arr[hash1] != NULL) {
             if (arr[hash1]->key == key) {
-                return HashIterator(&arr[hash1], &arr[capacity]);
+                return HashMapIterator(&arr[hash1], arr + capacity);
             }
             hash1 = (hash1 + hash2) % capacity;
         }
         return end();
     }
 };
+

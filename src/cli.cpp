@@ -20,8 +20,8 @@ void CLI::add_cmd(std::string name, Cmd cmd) {
 void CLI::print_help() {
   std::cout << "Usage: " << name << " <command> [args...]" << std::endl;
   std::cout << "Commands:" << std::endl;
-  for (auto &cmd : cmds) {
-    std::cout << "  " << cmd.key << " - " << cmd.value.description
+  for (auto cmd : cmds) {
+    std::cout << "  " << cmd.first << " - " << cmd.second.description
               << std::endl;
   }
 }
@@ -39,5 +39,6 @@ void CLI::run() {
     return;
   }
 
-  (*iter).value.fn(args);
+  (*iter).second.fn(args);
 }
+

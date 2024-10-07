@@ -10,12 +10,12 @@ TEST(HashMapTest, InsertElements) {
     EXPECT_EQ(map.size(), 2);
 
     auto iter = map.find("one");
-    int v = (*iter).value; // Dereference the iterator and access value
+    int v = map["one"];
     EXPECT_NE(iter, map.end()); 
     EXPECT_EQ(v, 1);
 
     iter = map.find("two");
-    v = (*iter).value;
+    v = map["two"];
     EXPECT_NE(iter, map.end());
     EXPECT_EQ(v, 2);
 }
@@ -30,7 +30,7 @@ TEST(HashMapTest, FindElements) {
     map.insert("ten", 10);
 
     auto iter = map.find("nine");
-    int v = (*iter).value;
+    int v = map["nine"];
     EXPECT_NE(iter, map.end());
     EXPECT_EQ(v, 9);
 }

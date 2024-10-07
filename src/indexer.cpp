@@ -1,10 +1,13 @@
 #include "indexer.hpp"
 #include "array_list.hpp"
+#include "chunk.hpp"
+#include "hashmap.hpp"
 #include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <thread>
 
 Indexer::Indexer(std::string directory, std::string indexFile) {
   this->directory = directory;
@@ -47,8 +50,8 @@ ArrayList<std::string> Indexer::file_to_words(std::string file_path) {
   return words;
 }
 
-std::unordered_map<std::string, int> Indexer::index_file(std::string file) {
-  std::unordered_map<std::string, int> word_count;
+HashMap<std::string, int> Indexer::index_file(std::string file) {
+  HashMap<std::string, int> word_count;
   ArrayList<std::string> words = file_to_words(file);
 
   for (std::string word : words) {
@@ -63,17 +66,52 @@ std::unordered_map<std::string, int> Indexer::index_file(std::string file) {
 }
 
 void Indexer::index_directory() {
-  for (std::string file : files) {
-    auto word_count = index_file(file);
-    for (auto const &pair : word_count) {
-      if (index.find(pair.first) == index.end()) {
-        index[pair.first] = Frequency{
-            pair.second, ArrayList<FileFrequency>{{file, pair.second}}};
-      } else {
-        index[pair.first].total += pair.second;
-        index[pair.first].files.add(FileFrequency{file, pair.second});
+  unsigned int num_threads = std::thread::hardware_concurrency();
+  if (num_threads == 0)
+    num_threads = 2; // WARNING: Default to 2 threads when core info n/a
+
+  ArrayList<Chunk> file_chunks;
+  int chunk_size = files.size() / num_threads;
+  for (int i = 0; i < num_threads; i++) {
+    Chunk chunk;
+    chunk.start = i * chunk_size;
+    chunk.end = (i == num_threads - 1) ? files.size() : (i + 1) * chunk_size;
+    file_chunks.add(chunk);
+  }
+
+  auto index_chunk = [&](Chunk chunk) {
+    for (int i = chunk.start; i < chunk.end; i++) {
+      HashMap<std::string, int> word_count =
+          index_file(files.get(i));
+      for (auto const &pair : word_count) {
+        std::lock_guard<std::mutex> lock(index_mutex);
+        if (index.find(pair.first) == index.end()) {
+          Frequency freq;
+          freq.total = pair.second;
+          FileFrequency file_freq;
+          file_freq.file = files.get(i);
+          file_freq.count = pair.second;
+          freq.files.add(file_freq);
+          index[pair.first] = freq;
+        } else {
+          index[pair.first].total += pair.second;
+          FileFrequency file_freq;
+          file_freq.file = files.get(i);
+          file_freq.count = pair.second;
+          index[pair.first].files.add(file_freq);
+        }
       }
     }
+  }; // WARNING: Mutex auto released here
+
+  typedef std::unique_ptr<std::thread> thread_ptr;
+  ArrayList<thread_ptr> threads;
+  for (int i = 0; i < num_threads; i++) {
+    threads.add(thread_ptr(new std::thread(index_chunk, file_chunks.get(i))));
+  }
+
+  for (int i = 0; i < num_threads; i++) {
+    threads.get(i)->join();
   }
 }
 
@@ -82,6 +120,7 @@ void Indexer::serialize_index() {
   index_file << "word total file1 count1 file2 count2 ..." << std::endl;
   for (auto const &pair : index) {
     index_file << pair.first << " " << pair.second.total;
+
     for (int i = 0; i < pair.second.files.size(); i++) {
       index_file << " " << pair.second.files.get(i).file << " "
                  << pair.second.files.get(i).count;
