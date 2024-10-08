@@ -8,10 +8,12 @@
 struct FileFrequency {
   std::string file;
   int count;
+  double tf;
 };
 
 struct Frequency {
   int total;
+  double idf;
   ArrayList<FileFrequency> files;
 };
 
