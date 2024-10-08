@@ -3,6 +3,7 @@ CMakeFiles/
 CMakeCache.txt
 CMakeScripts/
 build/
+.vscode/
 
 .cache/
 

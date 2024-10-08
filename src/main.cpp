@@ -1,5 +1,6 @@
 #include "cli.hpp"
 #include "trie.hpp"
+#include "indexer.hpp"
 #include "array_list.hpp"
 #include <iostream>
 #include <filesystem>
@@ -43,25 +44,14 @@ void search_handler(ArrayList<std::string> args) {
 // }
 
 void index_handler(ArrayList<std::string> args) {
-    if (args.size() != 2) {
-        std::cerr << "Usage: index <input directory>" << std::endl;
-        return;
-    }
+  if (args.size() != 3) {
+    std::cerr << "Usage: index <input directory> <index path>" << std::endl;
+    return;
+  }
 
-    std::string directory = args.get(1);
-    
-    Trie trie;
-
-    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-        std::string filepath = entry.path().string();
-        std::cout << "Indexing file: " << filepath << std::endl;
-        trie.insertFromFile(filepath);  // Insert all words from the file into the trie
-    }
-
-
-    global_trie = trie;
-
-    std::cout << "Indexing complete!" << std::endl;
+  Indexer indexer(args.get(1), args.get(2));
+  indexer.index_directory();
+  indexer.serialize_index();
 }
 
 
