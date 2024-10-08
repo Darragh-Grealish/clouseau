@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <cmath>
 
 Indexer::Indexer(const std::string &directory, const std::string &indexFile) {
   this->directory = directory;
