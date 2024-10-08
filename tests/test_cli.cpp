@@ -4,11 +4,11 @@
 // TEST: GIVEN a command with no arguments WHEN the command is executed THEN it
 // should print "No arguments provided"
 void testCommand(ArrayList<std::string> args) {
-  if (args.isEmpty()) {
+  if (args.empty()) {
     std::cout << "No arguments provided" << std::endl;
     return;
   }
-  std::cout << "Received arguments: " << args.get(1) << std::endl;
+  std::cout << "Received arguments: " << args[1] << std::endl;
 }
 
 // TEST: GIVEN a CLI with a command WHEN the command is run with arguments THEN

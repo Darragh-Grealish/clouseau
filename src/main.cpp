@@ -24,24 +24,10 @@ void search_handler(ArrayList<std::string> args) {
         return;
     }
 
-    std::string word = args.get(1);
+  std::cout << "Searching for " << args[1] << std::endl;
 
-    if (global_trie.search(word)) {
-        std::cout << "Word '" << word << "' found in the index!" << std::endl;
-    } else {
-        std::cout << "Word '" << word << "' not found." << std::endl;
-    }
+  return;
 }
-
-
-// void index_handler(ArrayList<std::string> args) {
-//   if (args.size() != 2) {
-//     std::cerr << "Usage: index <input directory> <index path>" << std::endl;
-//     return;
-//   }
-
-//   std::cout << "Indexing " << args.get(1) << " to " << args.get(2) << std::endl;
-// }
 
 void index_handler(ArrayList<std::string> args) {
   if (args.size() != 3) {
@@ -49,7 +35,7 @@ void index_handler(ArrayList<std::string> args) {
     return;
   }
 
-  Indexer indexer(args.get(1), args.get(2));
+  Indexer indexer(args[1], args[2]);
   indexer.index_directory();
   indexer.serialize_index();
 }

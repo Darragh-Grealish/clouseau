@@ -9,7 +9,7 @@ CLI::CLI(std::string name, int argc, char *argv[]) {
   }
 
   for (int i = 1; i < argc; i++) {  // NOTE: skip first arg as it's the program name
-    args.add(argv[i]);
+    args.push_back(argv[i]);
   }
 }
 
@@ -32,9 +32,9 @@ void CLI::run() {
     return;
   }
 
-  auto iter = cmds.find(args.get(0));
+  auto iter = cmds.find(args[0]);
   if (iter == cmds.end()) {
-    std::cout << "Command not found: " << args.get(0) << std::endl;
+    std::cout << "Command not found: " << args[0] << std::endl;
     print_help();
     return;
   }
