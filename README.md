@@ -22,7 +22,7 @@ mkdir build
 cd build
 
 cmake ..
-make
+make # Windows: cmake --build .
 ```
 
 ## Run

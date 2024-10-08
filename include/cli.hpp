@@ -4,6 +4,9 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
+#include "trie.hpp"  
+
+extern Trie global_trie; 
 
 struct Cmd {
   std::string description;
