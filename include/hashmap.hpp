@@ -4,15 +4,11 @@ using namespace std;
 
 template <typename K, typename V> class HashNode {
 public:
-    V value;
     K key;
+    V value;
 
-    HashNode(K key, V value) {
-        this->value = value;
-        this->key = key;
-    }
+    HashNode(const K& key, const V& value) : key(key), value(value) {}
 };
-
 
 template <typename K, typename V> class HashMap {
 public:
@@ -28,7 +24,7 @@ public:
         arr = new HashNode<K, V>*[capacity];
 
         for (int i = 0; i < capacity; i++)
-            arr[i] = NULL;
+            arr[i] = nullptr;
     }
 
     int firstHash(const K& key) {
@@ -52,14 +48,14 @@ public:
         arr = new HashNode<K, V>*[capacity]; 
 
         for (int i = 0; i < capacity; i++) {
-            arr[i] = NULL;
+            arr[i] = nullptr;
         }
 
         mapsize = 0; // Reset mapsize, will be re-incremented in insert()
 
         // Insert old -> new array
         for (int i = 0; i < oldCapacity; i++) {
-            if (oldArr[i] != NULL && !oldArr[i]->key.empty()) {
+            if (oldArr[i] != nullptr && !oldArr[i]->key.empty()) {
                 insert(oldArr[i]->key, oldArr[i]->value);
             }
         }
@@ -73,11 +69,11 @@ public:
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
-        while (arr[hash1] != NULL && arr[hash1]->key != key && !arr[hash1]->key.empty()) {
+        while (arr[hash1] != nullptr && arr[hash1]->key != key && !arr[hash1]->key.empty()) {
             hash1 = (hash1 + hash2) % capacity; 
         }
 
-        if (arr[hash1] == NULL || arr[hash1]->key.empty()) { mapsize++; }
+        if (arr[hash1] == nullptr || arr[hash1]->key.empty()) { mapsize++; }
         arr[hash1] = temp; // insert pair
     }
 
@@ -85,15 +81,10 @@ public:
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
-        while (arr[hash1] != NULL) {
+        while (arr[hash1] != nullptr) {
             if (arr[hash1]->key == key) {
                 HashNode<K, V>* temp = arr[hash1];
                 arr[hash1] = new HashNode<K, V>("", V());
-
-                // If reducing the size every time we delete a node and flag -1
-                // The true size of the map will be incorrect as nodes are flagged not removed
-                // Or should we reduce size in our implementation?
-                // size--;  
                 return temp->value;
             }
             hash1 = (hash1 + hash2) % capacity;
@@ -105,18 +96,17 @@ public:
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
-        while (arr[hash1] != NULL && arr[hash1]->key != key) {
+        while (arr[hash1] != nullptr && arr[hash1]->key != key) {
             hash1 = (hash1 + hash2) % capacity;
         }
 
-        if (arr[hash1] == NULL) {
+        if (arr[hash1] == nullptr) {
             arr[hash1] = new HashNode<K, V>(key, V()); 
             mapsize++;
         }
 
         return arr[hash1]->value;
     }   
-
 
     class HashIterator {
     public:
@@ -161,7 +151,7 @@ public:
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
-        while (arr[hash1] != NULL) {
+        while (arr[hash1] != nullptr) {
             if (arr[hash1]->key == key) {
                 return HashIterator(&arr[hash1], &arr[capacity]);
             }
@@ -170,3 +160,4 @@ public:
         return end();
     }
 };
+

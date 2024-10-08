@@ -11,7 +11,7 @@ void search_handler(ArrayList<std::string> args) {
     return;
   }
 
-  std::cout << "Searching for " << args.get(1) << std::endl;
+  std::cout << "Searching for " << args[1] << std::endl;
 
   return;
 }
@@ -22,7 +22,7 @@ void index_handler(ArrayList<std::string> args) {
     return;
   }
 
-  Indexer indexer(args.get(1), args.get(2));
+  Indexer indexer(args[1], args[2]);
   indexer.index_directory();
   indexer.serialize_index();
 }
