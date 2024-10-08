@@ -67,6 +67,7 @@ void Indexer::index_directory() {
           FileFrequency file_freq;
           file_freq.file = file;
           file_freq.count = pair.second;
+          file_freq.tf = pair.second / (double)word_count.size(); // NOTE: Term frequency
           freq.files.push_back(file_freq);
           index[pair.first] = freq;
         } else {
@@ -76,6 +77,10 @@ void Indexer::index_directory() {
           file_freq.count = pair.second;
           index[pair.first].files.push_back(file_freq);
         }
+      }
+
+      for (auto &pair : index) {
+        pair.second.idf = std::log(files.size() / pair.second.files.size());
       }
     }
   };
@@ -104,11 +109,12 @@ void Indexer::index_directory() {
 
 void Indexer::serialize_index() {
   std::ofstream index_file(indexFile);
-  index_file << "word total file1 count1 file2 count2 ..." << std::endl;
+  index_file << "word idf total file1 tf1 count1 file2 tf2 count2 ..." << std::endl; // NOTE: Header
+  //
   for (auto const &pair : index) {
-    index_file << pair.first << " " << pair.second.total;
+    index_file << pair.first << " " << pair.second.idf << " " << pair.second.total;
     for (int i = 0; i < pair.second.files.size(); i++) {
-      index_file << " " << pair.second.files[i].file << " "
+      index_file << " " << pair.second.files[i].file << " " << pair.second.files[i].tf
                  << pair.second.files[i].count;
     }
     index_file << std::endl;
