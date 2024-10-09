@@ -53,12 +53,12 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
   create_temp_file(temp_dir, "file1.txt", "word1 word2");
   create_temp_file(temp_dir, "file2.txt", "word2 word3");
 
-  Indexer indexer(temp_dir, "test_index.idx");
+  Indexer indexer(temp_dir, "test_index");
   indexer.index_directory();
   indexer.serialize_index();
 
   // Check if the index file was created
-  EXPECT_TRUE(std::filesystem::exists("test_index.idx"));
+  EXPECT_TRUE(std::filesystem::exists(temp_dir + "/test_index.csv"));
 
   // Read the file and check contents
   std::ifstream index_file("test_index.idx");
