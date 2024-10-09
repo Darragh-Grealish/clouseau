@@ -1,5 +1,5 @@
 #pragma once
-
+#include "trie.hpp"
 #include "array_list.hpp"
 #include <mutex>
 #include <string>
@@ -19,6 +19,7 @@ struct Frequency {
 
 class Indexer {
 public:
+  Trie trie; 
   Indexer(const std::string &directory, const std::string &indexFile);
 
   // NOTE: Indexes all files in the directory and serializes the index

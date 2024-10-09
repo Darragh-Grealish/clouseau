@@ -9,6 +9,7 @@
 #include <thread>
 #include <unordered_map>
 #include <cmath>
+#include "trie.hpp"
 
 Indexer::Indexer(const std::string &directory, const std::string &indexFile) {
   this->directory = directory;
@@ -78,6 +79,8 @@ void Indexer::index_directory() {
           file_freq.count = pair.second;
           index[pair.first].files.push_back(file_freq);
         }
+        trie.insert(pair.first, file);
+      
       }
 
       for (auto &pair : index) {
