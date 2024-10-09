@@ -21,44 +21,49 @@ Indexer::Indexer(const std::string &directory, const std::string &indexFile) {
   }
 }
 
-std::unordered_map<std::string, int>
-Indexer::file_word_count(const std::string &file) {
+std::unordered_map<std::string, int> Indexer::file_word_count(const std::string &file) {
   std::unordered_map<std::string, int> word_count;
   std::ifstream input(directory + "/" + file);
   if (!input.is_open()) {
     throw std::runtime_error("Could not open file");
   }
   std::string line;
+  int total_words = 0; // Add this line to count total words
   while (std::getline(input, line)) {
     std::string clean_word;
 
     for (char &c : line) {
-      // NOTE: Keep letters, numbers, and allowed symbols (apostrophes and
-      // hyphens inside words)
       if (std::isalnum(c, std::locale()) || c == '\'' || c == '-') {
         clean_word += std::tolower(c, std::locale());
       } else {
-
         if (!clean_word.empty()) {
           word_count[clean_word]++;
+          total_words++; // Increment total words
           clean_word.clear();
         }
       }
     }
+
+    clean_word.erase(std::remove(clean_word.begin(), clean_word.end(), ','), clean_word.end());
+
     if (!clean_word.empty()) {
       word_count[clean_word]++;
+      total_words++; // Increment total words
     }
   }
+  word_count["__total_words__"] = total_words; // Store total words in the map
   return word_count;
 }
+
 
 void Indexer::index_directory() {
   ArrayList<std::thread> threads;
 
-  // NOTE: Anon func for each thread
   auto worker = [this](ArrayList<std::string> files) {
     for (const std::string &file : files) {
       std::unordered_map<std::string, int> word_count = file_word_count(file);
+      int total_words = word_count["__total_words__"]; // Retrieve total words
+      word_count.erase("__total_words__"); // Remove total words from the map
 
       std::lock_guard<std::mutex> lock(index_mutex);
       for (auto const &pair : word_count) {
@@ -68,7 +73,7 @@ void Indexer::index_directory() {
           FileFrequency file_freq;
           file_freq.file = file;
           file_freq.count = pair.second;
-          file_freq.tf = pair.second / (double)word_count.size(); // NOTE: Term frequency
+          file_freq.tf = pair.second / (double)total_words; // Correct term frequency calculation
           freq.files.push_back(file_freq);
           index[pair.first] = freq;
         } else {
@@ -76,6 +81,7 @@ void Indexer::index_directory() {
           FileFrequency file_freq;
           file_freq.file = file;
           file_freq.count = pair.second;
+          file_freq.tf = pair.second / (double)total_words; // Correct term frequency calculation
           index[pair.first].files.push_back(file_freq);
         }
       }
@@ -88,16 +94,14 @@ void Indexer::index_directory() {
 
   int num_threads = std::thread::hardware_concurrency();
   if (num_threads == 0) {
-    num_threads = 1; // WARNING: hardware_concurrency returns 0 when the machine is single-core
+    num_threads = 1;
   }
-  std::cout << "Indexing " << files.size() << " files with " << num_threads
-            << " threads" << std::endl;
+  std::cout << "Indexing " << files.size() << " files with " << num_threads << " threads" << std::endl;
 
-  int files_per_thread = files.size() / num_threads; 
+  int files_per_thread = files.size() / num_threads;
   for (int i = 0; i < num_threads; i++) {
     ArrayList<std::string> thread_files;
-    for (int j = i * files_per_thread;
-         j < (i + 1) * files_per_thread && j < files.size(); j++) {
+    for (int j = i * files_per_thread; j < (i + 1) * files_per_thread && j < files.size(); j++) {
       thread_files.push_back(files[j]);
     }
     threads.push_back(std::thread(worker, thread_files));
@@ -108,15 +112,22 @@ void Indexer::index_directory() {
   }
 }
 
+
+
 void Indexer::serialize_index() {
-  std::ofstream index_file(indexFile);
-  index_file << "word idf total file1 tf1 count1 file2 tf2 count2 ..." << std::endl; // NOTE: Header
-  //
+  std::ofstream index_file(directory + "/" + indexFile + ".csv");
+
+  // NOTE: Valid header
+  index_file << "word,idf,total,file1,tf1";
+  for (int i = 2; i <= files.size(); i++) {
+    index_file << ",file" << i << ",tf" << i;
+  }
+  index_file << std::endl;
+
   for (auto const &pair : index) {
-    index_file << pair.first << " " << pair.second.idf << " " << pair.second.total;
+    index_file << pair.first << "," << pair.second.idf << "," << pair.second.total;
     for (int i = 0; i < pair.second.files.size(); i++) {
-      index_file << " " << pair.second.files[i].file << " " << pair.second.files[i].tf
-                 << pair.second.files[i].count;
+      index_file << "," << pair.second.files[i].file << "," << pair.second.files[i].tf; 
     }
     index_file << std::endl;
   }
