@@ -38,6 +38,8 @@ public:
 
     void insertFromFile(const std::string& filepath);
 
+    bool exists(const std::string &word) const;
+
     ~Trie();
 };
 

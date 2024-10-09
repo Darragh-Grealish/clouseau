@@ -18,7 +18,7 @@ add_subdirectory(googletest)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 include_directories(include)
-add_executable(clouseau src/main.cpp src/cli.cpp src/indexer.cpp) 
+add_executable(clouseau src/main.cpp src/cli.cpp src/indexer.cpp src/trie.cpp) 
 
 enable_testing()
 include(GoogleTest)
@@ -39,7 +39,7 @@ target_link_libraries(test_hash_map gtest gtest_main)
 gtest_discover_tests(test_hash_map)
 
 # TEST: Indexer implementation
-add_executable(test_indexer tests/test_indexer.cpp src/indexer.cpp)
+add_executable(test_indexer tests/test_indexer.cpp src/indexer.cpp src/trie.cpp)
 target_link_libraries(test_indexer gtest gtest_main)
 gtest_discover_tests(test_indexer)
 

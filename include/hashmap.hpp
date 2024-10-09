@@ -115,17 +115,17 @@ public:
         HashNode<K, V>** current;
         HashNode<K, V>** end;
 
-        HashMapIterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {
+        HashIterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {
             while (current != end && (*current) == nullptr) {
                 ++current;
             }
         }
 
-        bool operator!=(const HashMapIterator& other) const {
+        bool operator!=(const HashIterator& other) const {
             return current != other.current;
         }
 
-        bool operator==(const HashMapIterator& other) const {
+        bool operator==(const HashIterator& other) const {
             return current == other.current;  
         }   
 
@@ -140,21 +140,21 @@ public:
         }
     };
 
-    HashMapIterator begin() {
-        return HashMapIterator(arr, arr + capacity);
+    HashIterator begin() {
+        return HashIterator(arr, arr + capacity);
     }
 
-    HashMapIterator end() {
-        return HashMapIterator(arr + capacity, arr + capacity);
+    HashIterator end() {
+        return HashIterator(arr + capacity, arr + capacity);
     }
 
-    HashMapIterator find(const K& key) {
+    HashIterator find(const K& key) {
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
         while (arr[hash1] != nullptr) {
             if (arr[hash1]->key == key) {
-                return HashMapIterator(&arr[hash1], arr + capacity);
+                return HashIterator(&arr[hash1], arr + capacity);
             }
             hash1 = (hash1 + hash2) % capacity;
         }
