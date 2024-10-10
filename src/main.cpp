@@ -7,7 +7,7 @@ void search_handler(ArrayList<std::string> args) {
 
   std::cout << "search_handler called with " << args.size() << " arguments." << std::endl;
   if (args.size() != 2) {
-    std::cerr << "Usage: search <index path>" << std::endl;
+    std::cerr << "Usage: search <index name>" << std::endl;
     return;
   }
 

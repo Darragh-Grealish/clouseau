@@ -6,6 +6,7 @@ build/
 .vscode/
 
 .cache/
+.DS_Store 
 
 # Gutenberg files from script
 archive/
