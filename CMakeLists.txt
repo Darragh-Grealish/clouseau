@@ -11,6 +11,9 @@ set(CMAKE_CTEST_OUTPUT_ON_FAILURE TRUE)
 if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+    add_compile_options(/std:c17)
+    add_compile_options(/W4)
+    add_compile_options(/WX)
 endif()
 
 # NOTE: Add Google Test submodule as a subdirectory
