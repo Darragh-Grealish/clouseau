@@ -25,12 +25,37 @@ void search_handler(ArrayList<std::string> args) {
     std::cin >> prefix;
 
     ArrayList<std::string> results = trie.search(prefix);
+
     if (results.size() == 0) {
         std::cout << "No results found." << std::endl;
     } else {
-        std::cout << "Results:" << std::endl;
-        for (const std::string& file : results) {
-            std::cout << file << std::endl;
+        int result_count = results.size();
+        int display_count = 0;
+
+        while (result_count > 0) {
+            std::cout << "Search Results:" << std::endl;
+            for (int i = 0; i < 10 && i < result_count; i++) {
+                std::string file_path = dirPath + "/" + results[display_count];
+                std::string title = results[display_count]; // assuming title is the same as file name
+
+                std::cout << "Title: " << title << std::endl;
+                std::cout << "File Path: " << file_path << std::endl;
+                std::cout << std::endl;
+
+                display_count++;
+            }
+
+            result_count -= 10;
+
+            if (result_count > 0) {
+                std::cout << "Press 'q' to quit or any other key to display the next 10 results: ";
+                char response;
+                std::cin >> response;
+
+                if (response == 'q') {
+                    break;
+                }
+            }
         }
     }
 }
