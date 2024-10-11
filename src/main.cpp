@@ -15,7 +15,7 @@ void search_handler(ArrayList<std::string> args) {
     std::string indexPath = args[1];
     std::string dirPath = indexPath.substr(0, indexPath.find_last_of('/'));
 
-    std::cout << "Searching for " << args[1] << std::endl;
+    std::cout << "Searching: " << args[1] << std::endl;
 
     Indexer indexer(dirPath.c_str(), args[1].c_str()); 
     Trie& trie = indexer.trie;
@@ -33,10 +33,10 @@ void search_handler(ArrayList<std::string> args) {
         int display_count = 0;
 
         while (result_count > 0) {
-            std::cout << "Search Results:" << std::endl;
+            std::cout << "\nSearch Results:" << std::endl;
             for (int i = 0; i < 10 && i < result_count; i++) {
                 std::string file_path = dirPath + "/" + results[display_count];
-                std::string title = results[display_count]; // assuming title is the same as file name
+                std::string title = results[display_count];
 
                 std::cout << "Title: " << title << std::endl;
                 std::cout << "File Path: " << file_path << std::endl;

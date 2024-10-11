@@ -38,7 +38,7 @@ std::unordered_map<std::string, int> Indexer::file_word_count(const std::string 
     throw std::runtime_error("Could not open file");
   }
   std::string line;
-  int total_words = 0; // Add this line to count total words
+  int total_words = 0; 
   while (std::getline(input, line)) {
     std::string clean_word;
 
@@ -48,7 +48,7 @@ std::unordered_map<std::string, int> Indexer::file_word_count(const std::string 
       } else {
         if (!clean_word.empty()) {
           word_count[clean_word]++;
-          total_words++; // Increment total words
+          total_words++; 
           clean_word.clear();
         }
       }
@@ -58,10 +58,10 @@ std::unordered_map<std::string, int> Indexer::file_word_count(const std::string 
 
     if (!clean_word.empty()) {
       word_count[clean_word]++;
-      total_words++; // Increment total words
+      total_words++; 
     }
   }
-  word_count["__total_words__"] = total_words; // Store total words in the map
+  word_count["__total_words__"] = total_words; 
   return word_count;
 }
 
@@ -72,8 +72,8 @@ void Indexer::index_directory() {
   auto worker = [this](ArrayList<std::string> files) {
     for (const std::string &file : files) {
       std::unordered_map<std::string, int> word_count = file_word_count(file);
-      int total_words = word_count["__total_words__"]; // Retrieve total words
-      word_count.erase("__total_words__"); // Remove total words from the map
+      int total_words = word_count["__total_words__"]; 
+      word_count.erase("__total_words__"); 
 
       std::lock_guard<std::mutex> lock(index_mutex);
       for (auto const &pair : word_count) {
@@ -83,7 +83,7 @@ void Indexer::index_directory() {
           FileFrequency file_freq;
           file_freq.file = file;
           file_freq.count = pair.second;
-          file_freq.tf = pair.second / (double)total_words; // Correct term frequency calculation
+          file_freq.tf = pair.second / (double)total_words; 
           freq.files.push_back(file_freq);
           index[pair.first] = freq;
         } else {
@@ -91,7 +91,7 @@ void Indexer::index_directory() {
           FileFrequency file_freq;
           file_freq.file = file;
           file_freq.count = pair.second;
-          file_freq.tf = pair.second / (double)total_words; // Correct term frequency calculation
+          file_freq.tf = pair.second / (double)total_words; 
           index[pair.first].files.push_back(file_freq);
         }
         trie.insert(pair.first, file);
