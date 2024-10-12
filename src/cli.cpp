@@ -1,5 +1,6 @@
 #include <iostream>
 #include "cli.hpp"
+#include "indexer.hpp"
 
 CLI::CLI(std::string name, int argc, char *argv[]) {
   this->name = name;

@@ -53,7 +53,7 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
   create_temp_file(temp_dir, "file1.txt", "word1 word2");
   create_temp_file(temp_dir, "file2.txt", "word2 word3");
 
-  Indexer indexer(temp_dir, "test_index");
+  Indexer indexer(temp_dir, "test_index.csv");
   indexer.index_directory();
   indexer.serialize_index();
 
@@ -66,7 +66,10 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
   std::getline(index_file, line); // Skip header
 
   std::unordered_map<std::string, int> expected_totals = {
-      {"word1", 1}, {"word2", 2}, {"word3", 1}};
+    {"word1", 1},
+    {"word2", 2},
+    {"word3", 1}
+  };
 
   while (std::getline(index_file, line)) {
     std::istringstream iss(line);

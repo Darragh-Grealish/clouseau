@@ -12,6 +12,9 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
     add_compile_options(/std:c17)
+    add_definitions(-DPLATFORM_WINDOWS)  
+else()
+    add_definitions(-DPLATFORM_UNIX)  
 endif()
 
 # NOTE: Add Google Test submodule as a subdirectory
@@ -19,7 +22,7 @@ add_subdirectory(googletest)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 include_directories(include)
-add_executable(clouseau src/main.cpp src/cli.cpp src/indexer.cpp) 
+add_executable(clouseau src/main.cpp src/cli.cpp src/indexer.cpp src/trie.cpp) 
 
 enable_testing()
 include(GoogleTest)
@@ -30,7 +33,7 @@ target_link_libraries(test_array_list gtest gtest_main)
 gtest_discover_tests(test_array_list)
 
 # TEST: CLI implementation
-add_executable(test_cli tests/test_cli.cpp src/cli.cpp)
+add_executable(test_cli tests/test_cli.cpp src/cli.cpp src/trie.cpp src/indexer.cpp)
 target_link_libraries(test_cli gtest gtest_main)
 gtest_discover_tests(test_cli)
 
@@ -40,7 +43,7 @@ target_link_libraries(test_hash_map gtest gtest_main)
 gtest_discover_tests(test_hash_map)
 
 # TEST: Indexer implementation
-add_executable(test_indexer tests/test_indexer.cpp src/indexer.cpp)
+add_executable(test_indexer tests/test_indexer.cpp src/indexer.cpp src/trie.cpp)
 target_link_libraries(test_indexer gtest gtest_main)
 gtest_discover_tests(test_indexer)
 
