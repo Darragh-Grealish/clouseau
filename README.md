@@ -29,7 +29,7 @@ cd build
 
 # Build
 cmake ..
-make
+make #Windows: cmake --build .
 
 # Test
 make test

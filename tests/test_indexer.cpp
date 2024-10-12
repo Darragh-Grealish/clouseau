@@ -66,7 +66,10 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
   std::getline(index_file, line); // Skip header
 
   std::unordered_map<std::string, int> expected_totals = {
-      {"word1", 1}, {"word2", 2}, {"word3", 1}};
+    {"word1", 1},
+    {"word2", 2},
+    {"word3", 1}
+  };
 
   while (std::getline(index_file, line)) {
     std::istringstream iss(line);
