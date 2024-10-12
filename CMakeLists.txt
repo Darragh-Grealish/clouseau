@@ -12,6 +12,9 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
     add_compile_options(/std:c17)
+    add_definitions(-DPLATFORM_WINDOWS)  
+else()
+    add_definitions(-DPLATFORM_UNIX)  
 endif()
 
 # NOTE: Add Google Test submodule as a subdirectory

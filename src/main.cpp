@@ -3,7 +3,11 @@
 #include "array_list.hpp"
 #include <iostream>
 #include "trie.hpp"
+#ifdef _WIN32
+#include <direct.h>
+#else 
 #include <libgen.h>
+#endif
 
 void search_handler(ArrayList<std::string> args) {
     std::cout << "search_handler called with " << args.size() << " arguments." << std::endl;
