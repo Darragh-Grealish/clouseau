@@ -105,4 +105,12 @@ TEST(HashMapTest, RehashElements) {
     map.insert("fortyone", 41);
 
     EXPECT_EQ(map.size(), 41);
+
+    auto iter = map.find("thirty");
+    auto v = (*iter).value;
+    EXPECT_EQ(v, 30);
+
+    iter = map.find("fortyone");
+    v = (*iter).value;
+    EXPECT_EQ(v, 41);
 }

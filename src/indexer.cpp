@@ -7,7 +7,7 @@
 #include <locale>
 #include <string>
 #include <thread>
-#include <unordered_map>
+#include <hashmap.hpp>
 #include <cmath>
 #include <algorithm>
 #include "trie.hpp"
@@ -24,15 +24,15 @@ Indexer::Indexer(const std::string &directory, const std::string &indexFile) {
   
   // Initialize the Trie
   for (const std::string &file : files) {
-    std::unordered_map<std::string, int> word_count = file_word_count(file);
+    HashMap<std::string, int> word_count = file_word_count(file);
     for (auto const &pair : word_count) {
-      trie.insert(pair.first, file);
+      trie.insert(pair.key, file);
     }
   }
 }
 
-std::unordered_map<std::string, int> Indexer::file_word_count(const std::string &file) {
-  std::unordered_map<std::string, int> word_count;
+HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
+  HashMap<std::string, int> word_count;
   std::ifstream input(directory + "/" + file);
   if (!input.is_open()) {
     throw std::runtime_error("Could not open file");
@@ -61,7 +61,7 @@ std::unordered_map<std::string, int> Indexer::file_word_count(const std::string 
       total_words++; 
     }
   }
-  word_count["__total_words__"] = total_words; 
+  word_count["__total_words__"] = total_words;
   return word_count;
 }
 
@@ -71,34 +71,34 @@ void Indexer::index_directory() {
 
   auto worker = [this](ArrayList<std::string> files) {
     for (const std::string &file : files) {
-      std::unordered_map<std::string, int> word_count = file_word_count(file);
+      HashMap<std::string, int> word_count = file_word_count(file);
       int total_words = word_count["__total_words__"]; 
       word_count.erase("__total_words__"); 
 
       std::lock_guard<std::mutex> lock(index_mutex);
       for (auto const &pair : word_count) {
-        if (index.find(pair.first) == index.end()) {
+        if (index.find(pair.key) == index.end()) {
           Frequency freq;
-          freq.total = pair.second;
+          freq.total = pair.value;
           FileFrequency file_freq;
           file_freq.file = file;
-          file_freq.count = pair.second;
-          file_freq.tf = pair.second / (double)total_words; 
+          file_freq.count = pair.value;
+          file_freq.tf = pair.value / (double)total_words; 
           freq.files.push_back(file_freq);
-          index[pair.first] = freq;
+          index[pair.key] = freq;
         } else {
-          index[pair.first].total += pair.second;
+          index[pair.key].total += pair.value;
           FileFrequency file_freq;
           file_freq.file = file;
-          file_freq.count = pair.second;
-          file_freq.tf = pair.second / (double)total_words; 
-          index[pair.first].files.push_back(file_freq);
+          file_freq.count = pair.value;
+          file_freq.tf = pair.value / (double)total_words; 
+          index[pair.key].files.push_back(file_freq);
         }
-        trie.insert(pair.first, file);
+        trie.insert(pair.key, file);
       }
 
       for (auto &pair : index) {
-        pair.second.idf = std::log(files.size() / pair.second.files.size());
+        pair.value.idf = std::log(files.size() / pair.value.files.size());
       }
     }
   };
@@ -136,9 +136,9 @@ void Indexer::serialize_index() {
   index_file << std::endl;
 
   for (auto const &pair : index) {
-    index_file << pair.first << "," << pair.second.idf << "," << pair.second.total;
-    for (int i = 0; i < pair.second.files.size(); i++) {
-      index_file << "," << pair.second.files[i].file << "," << pair.second.files[i].tf; 
+    index_file << pair.key << "," << pair.value.idf << "," << pair.value.total;
+    for (int i = 0; i < pair.value.files.size(); i++) {
+      index_file << "," << pair.value.files[i].file << "," << pair.value.files[i].tf; 
     }
     index_file << std::endl;
   }

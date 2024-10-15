@@ -16,15 +16,21 @@ public:
     int capacity;
     int mapsize;
     float loadFactor;
+    std::mutex* mtx = nullptr;
 
     HashMap() {
         capacity = 40;
         mapsize = 0;
         loadFactor = 0.75;
         arr = new HashNode<K, V>*[capacity];
+        mtx = new std::mutex();
 
         for (int i = 0; i < capacity; i++)
             arr[i] = nullptr;
+    }
+
+    ~HashMap() {
+        delete mtx;
     }
 
     int firstHash(const K& key) {
@@ -39,7 +45,10 @@ public:
 
     int size() { return mapsize; }
 
-    bool empty() { return mapsize == 0; }
+    bool empty() { 
+        std::lock_guard<std::mutex> lock(*mtx);
+        return mapsize == 0; 
+        }
 
     void rehash() {
         int oldCapacity = capacity;
@@ -55,29 +64,38 @@ public:
 
         // Insert old -> new array
         for (int i = 0; i < oldCapacity; i++) {
-            if (oldArr[i] != nullptr && !oldArr[i]->key.empty()) {
-                insert(oldArr[i]->key, oldArr[i]->value);
+            if (oldArr[i] != nullptr) {
+                insertWithoutLock(oldArr[i]->key, oldArr[i]->value);
             }
         }
         delete[] oldArr;
     }
 
     void insert(const K& key, const V& value) {
+        std::lock_guard<std::mutex> lock(*mtx);
         if ((float)mapsize / capacity >= loadFactor) { rehash(); }
+        
+        insertWithoutLock(key, value);
+    }
 
+    void insertWithoutLock(const K& key, const V& value) {
         HashNode<K, V>* temp = new HashNode<K, V>(key, value);
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
-        while (arr[hash1] != nullptr && arr[hash1]->key != key && !arr[hash1]->key.empty()) {
+        while (arr[hash1] != nullptr && arr[hash1]->key != key) {
             hash1 = (hash1 + hash2) % capacity; 
         }
 
-        if (arr[hash1] == nullptr || arr[hash1]->key.empty()) { mapsize++; }
-        arr[hash1] = temp; // insert pair
+        if (arr[hash1] == nullptr) { 
+            mapsize++; 
+        }
+        
+        arr[hash1] = temp;  // Insert pair
     }
 
     V erase(const K& key) {
+        std::lock_guard<std::mutex> lock(*mtx);
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
@@ -93,6 +111,7 @@ public:
     }
 
     V& operator[](const K& key) {
+        std::lock_guard<std::mutex> lock(*mtx);
         int hash1 = firstHash(key);
         int hash2 = secondHash(key);
 
