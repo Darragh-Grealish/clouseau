@@ -84,3 +84,30 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
   std::filesystem::remove(temp_dir + "/clouseau.csv");
   std::filesystem::remove_all(temp_dir);
 }
+
+// TEST: GIVEN a directory with an index file WHEN deserialize_index is called
+// THEN the index should be deserialized correctly.
+TEST(IndexerTest, DeserializeIndex_ReadsFromFile) {
+  std::string temp_dir = "./test_data";
+  std::filesystem::create_directory(temp_dir);
+  create_temp_file(temp_dir, "file1.txt", "word1 word2");
+  create_temp_file(temp_dir, "file2.txt", "word2 word3");
+
+  Indexer indexer(temp_dir);
+  indexer.index_directory();
+  indexer.serialize_index();
+  auto idx1 = indexer.get_index();
+
+  Indexer new_indexer(temp_dir);
+  new_indexer.deserialize_index();
+  std::unordered_map<std::string, Frequency> idx2 = new_indexer.get_index();
+
+  EXPECT_EQ(idx1.size(), idx2.size());
+  EXPECT_EQ(idx1["word1"].total, idx2["word1"].total);
+  EXPECT_EQ(idx1["word2"].total, idx2["word2"].total);
+  EXPECT_EQ(idx1["word3"].total, idx2["word3"].total);
+  EXPECT_EQ(idx1["word1"].idf, idx2["word1"].idf);
+  EXPECT_EQ(idx1["word2"].idf, idx2["word2"].idf);
+  EXPECT_EQ(idx1["word3"].idf, idx2["word3"].idf);
+}
+
