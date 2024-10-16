@@ -21,7 +21,7 @@ void search_handler(ArrayList<std::string> args) {
 
     std::cout << "Searching: " << args[1] << std::endl;
 
-    Indexer indexer(dirPath.c_str(), args[1].c_str()); 
+    Indexer indexer(dirPath.c_str()); 
     Trie& trie = indexer.trie;
 
     while (true) {
@@ -76,12 +76,12 @@ void search_handler(ArrayList<std::string> args) {
 }
 
 void index_handler(ArrayList<std::string> args) {
-    if (args.size() != 3) {
-        std::cerr << "Usage: index <input directory> <index path>" << std::endl;
+    if (args.size() != 2) {
+        std::cerr << "Usage: index <input directory>" << std::endl;
         return;
     }
 
-    Indexer indexer(args[1], args[2]);
+    Indexer indexer(args[1]);
     indexer.index_directory();
     indexer.serialize_index();
 }

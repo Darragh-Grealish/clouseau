@@ -12,21 +12,13 @@
 #include <algorithm>
 #include "trie.hpp"
 
-Indexer::Indexer(const std::string &directory, const std::string &indexFile) {
+Indexer::Indexer(const std::string &directory) {
   this->directory = directory;
-  this->indexFile = indexFile;
+  this->indexFile = "clouseau.csv";
 
   for (const auto &entry : std::filesystem::directory_iterator(directory)) {
-    if (entry.is_regular_file()) {
+    if (entry.is_regular_file() && entry.path().extension() == ".txt") {
       files.push_back(entry.path().filename().string());
-    }
-  }
-  
-  // Initialize the Trie
-  for (const std::string &file : files) {
-    std::unordered_map<std::string, int> word_count = file_word_count(file);
-    for (auto const &pair : word_count) {
-      trie.insert(pair.first, file);
     }
   }
 }
