@@ -35,7 +35,7 @@ make #Windows: cmake --build .
 make test
 
 # Run
-./clouseau index ../archive ../archive/index.csv
+./clouseau index ../archive
 ./clouseau search ../archive/index.csv
 
 ```
