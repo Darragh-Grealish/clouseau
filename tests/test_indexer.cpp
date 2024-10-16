@@ -33,7 +33,7 @@ TEST(IndexerTest, FileWordCount_CountsWords) {
   std::filesystem::create_directory(temp_dir);
   create_temp_file(temp_dir, "file1.txt", "word1 word2 word3 word1 word2");
 
-  Indexer indexer(temp_dir, "test_index.idx");
+  Indexer indexer(temp_dir);
   std::unordered_map<std::string, int> word_count =
       indexer.file_word_count("file1.txt");
 
@@ -53,15 +53,15 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
   create_temp_file(temp_dir, "file1.txt", "word1 word2");
   create_temp_file(temp_dir, "file2.txt", "word2 word3");
 
-  Indexer indexer(temp_dir, "test_index.csv");
+  Indexer indexer(temp_dir);
   indexer.index_directory();
   indexer.serialize_index();
 
   // Check if the index file was created
-  EXPECT_TRUE(std::filesystem::exists(temp_dir + "/test_index.csv"));
+  EXPECT_TRUE(std::filesystem::exists(temp_dir + "/clouseau.csv"));
 
   // Read the file and check contents
-  std::ifstream index_file("test_index.idx");
+  std::ifstream index_file(temp_dir + "/clouseau.csv");
   std::string line;
   std::getline(index_file, line); // Skip header
 
@@ -81,6 +81,6 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
 
   // Clean up
   index_file.close();
-  std::filesystem::remove("test_index.idx");
+  std::filesystem::remove(temp_dir + "/clouseau.csv");
   std::filesystem::remove_all(temp_dir);
 }

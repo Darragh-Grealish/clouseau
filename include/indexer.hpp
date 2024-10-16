@@ -20,7 +20,7 @@ struct Frequency {
 class Indexer {
 public:
   Trie trie; 
-  Indexer(const std::string &directory, const std::string &indexFile);
+  Indexer(const std::string &directory);
 
   // NOTE: Indexes all files in the directory and serializes the index
   void index_directory();
