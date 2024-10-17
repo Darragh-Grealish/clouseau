@@ -19,9 +19,7 @@ void search_handler(ArrayList<std::string> args) {
 
     Indexer indexer(args[1]);
     indexer.deserialize_index();
-    auto index = indexer.get_index();
-    std::cout << "Index loaded." << std::endl;
-    std::cout << "Size: " << index.size() << std::endl;
+    std::unordered_map<std::string, Frequency> index = indexer.get_index();
         
 //     while (true) {
 //         std::string prefix;

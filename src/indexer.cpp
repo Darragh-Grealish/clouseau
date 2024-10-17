@@ -155,7 +155,7 @@ void Indexer::deserialize_index() {
     index.clear(); // Clear existing index
 
     std::string line;
-    std::getline(index_file, line); // WARNING: Skip header
+    std::getline(index_file, line); // Skip header
 
     while (std::getline(index_file, line)) {
         std::istringstream iss(line);
@@ -163,10 +163,11 @@ void Indexer::deserialize_index() {
         double idf;
         int total;
 
+        // Parse word, idf, and total count
         if (!std::getline(iss, word, ',') ||
             !(iss >> idf) || iss.get() != ',' ||
             !(iss >> total)) {
-            throw std::runtime_error("Error parsing index file");
+            throw std::runtime_error("Error parsing index file: word, idf, or total");
         }
 
         Frequency freq;
@@ -176,10 +177,18 @@ void Indexer::deserialize_index() {
         // Parse file and tf pairs
         std::string file;
         double tf;
-        while (iss.get() == ',' &&
+        char comma;
+        while (iss >> comma && comma == ',' &&
                std::getline(iss, file, ',') &&
                iss >> tf) {
-            freq.files.push_back({file, static_cast<int>(tf)});
+            FileFrequency file_freq;
+            file_freq.file = file;
+            file_freq.tf = tf;
+            // Calculate count from tf and total words in file
+            // Since tf = count/total_words, count = tf * total_words
+            int total_words = static_cast<int>(tf > 0 ? (1.0 / tf) : 0);
+            file_freq.count = static_cast<int>(tf * total_words);
+            freq.files.push_back(file_freq);
         }
 
         index[word] = freq;
@@ -188,4 +197,3 @@ void Indexer::deserialize_index() {
     index_file.close();
     std::cout << "Index loaded from " << indexFile << std::endl;
 }
-
