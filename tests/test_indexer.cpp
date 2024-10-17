@@ -1,4 +1,4 @@
-#include "indexer.hpp"
+#include "indexer.h"
 #include <filesystem>
 #include <fstream>
 #include <gtest/gtest.h>

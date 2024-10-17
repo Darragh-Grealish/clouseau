@@ -1,5 +1,5 @@
 #include <iostream>
-#include "cli.hpp"
+#include "cli.h"
 
 CLI::CLI(std::string name, int argc, char *argv[]) {
   this->name = name;
