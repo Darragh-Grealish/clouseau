@@ -10,6 +10,8 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <sstream>
+#include <stdexcept>
 
 Indexer::Indexer(const std::string &directory) {
   this->directory = directory;
@@ -101,7 +103,7 @@ void Indexer::index_directory() {
   std::cout << "Indexing " << files.size() << " files with " << num_threads
             << " threads" << std::endl;
 
-  int files_per_thread = files.size() / num_threads;
+  size_t files_per_thread = files.size() / num_threads;
   for (int i = 0; i < num_threads; i++) {
     ArrayList<std::string> thread_files;
     for (int j = i * files_per_thread;
