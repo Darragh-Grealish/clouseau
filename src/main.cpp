@@ -1,5 +1,5 @@
-#include "cli.hpp"
-#include "indexer.hpp"
+#include "cli.h"
+#include "indexer.h"
 #include "array_list.hpp"
 #include <iostream>
 #ifdef _WIN32

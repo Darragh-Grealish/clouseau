@@ -1,6 +1,4 @@
 #include "trie.hpp"
-#include "indexer.hpp"
-#include <iostream>
 
 void Trie::insert(const std::string& word, const std::string& file) {
     TrieNode* current = root;

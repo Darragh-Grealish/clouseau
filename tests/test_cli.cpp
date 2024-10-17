@@ -1,4 +1,4 @@
-#include "cli.hpp"
+#include "cli.h"
 #include <gtest/gtest.h>
 
 // TEST: GIVEN a command with no arguments WHEN the command is executed THEN it
