@@ -1,4 +1,5 @@
 #pragma once
+#include "trie.hpp"
 #include "array_list.hpp"
 #include <mutex>
 #include <string>
@@ -18,6 +19,7 @@ struct Frequency {
 
 class Indexer {
 public:
+  Trie trie; 
   Indexer(const std::string &directory);
 
   // NOTE: Indexes all files in the directory and serializes the index
@@ -25,9 +27,6 @@ public:
 
   // NOTE: Serializes the index to a file (clouseau.idx)
   void serialize_index();
-
-  // NOTE: Deserializes the index from a file (clouseau.csv)
-  void deserialize_index();
 
   // NOTE: Returns a map of words to their frequency
   std::unordered_map<std::string, int> file_word_count(const std::string &file);
