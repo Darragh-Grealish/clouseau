@@ -2,13 +2,13 @@
 
 #include "array_list.hpp"
 #include <string>
-#include <unordered_map>
+#include "hashmap.hpp"
 
 class TrieNode {
 public:
     char character;
     bool is_end_of_word;
-    std::unordered_map<char, TrieNode*> children;
+    HashMap<char, TrieNode*> children;
     ArrayList<std::string> files;
 
     TrieNode(char character) : character(character), is_end_of_word(false) {}

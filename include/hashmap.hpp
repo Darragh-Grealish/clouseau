@@ -1,163 +1,233 @@
 #pragma once
 #include <functional>
+#include <vector>
+#include <mutex>
 using namespace std;
 
-template <typename K, typename V> class HashNode {
+
+template <typename K, typename V, typename Hash = std::hash<K>>
+class HashMap {
+private:
+    HashMap(const HashMap&) = delete;            // copy constructor
+    HashMap& operator=(const HashMap&) = delete; // copy assignment operator
+
+    struct Node {
+        K first;
+        V second;
+        Node* next;
+        Node(const K& k, const V& v) : first(k), second(v), next(nullptr) {}
+    };
+
+    std::vector<std::vector<Node*>> buckets;
+    std::vector<std::mutex> mutexes;
+    Hash hashFunction;
+
+    // mutex for key
+    std::mutex& getMutex(const K& first) {
+        std::size_t hashV = hashFunction(first);
+        return mutexes[hashV % mutexes.size()];
+    }
+
 public:
-    K key;
-    V value;
+    HashMap(std::size_t num_buckets = 16) : buckets(num_buckets), mutexes(num_buckets) {}
 
-    HashNode(const K& key, const V& value) : key(key), value(value) {}
-};
-
-template <typename K, typename V> class HashMap {
-public:
-    HashNode<K, V>** arr;
-    int capacity;
-    int mapsize;
-    float loadFactor;
-
-    HashMap() {
-        capacity = 40;
-        mapsize = 0;
-        loadFactor = 0.75;
-        arr = new HashNode<K, V>*[capacity];
-
-        for (int i = 0; i < capacity; i++)
-            arr[i] = nullptr;
-    }
-
-    int firstHash(const K& key) {
-        size_t hash = std::hash<K>()(key); 
-        return hash % capacity;
-    }
-
-    int secondHash(const K& key) {
-        size_t hash = std::hash<K>()(key); 
-        return (7 - (hash % 7));
-    }
-
-    int size() { return mapsize; }
-
-    bool empty() { return mapsize == 0; }
-
-    void rehash() {
-        int oldCapacity = capacity;
-        capacity = 2 * capacity;
-        HashNode<K, V>** oldArr = arr;
-        arr = new HashNode<K, V>*[capacity]; 
-
-        for (int i = 0; i < capacity; i++) {
-            arr[i] = nullptr;
-        }
-
-        mapsize = 0; // Reset mapsize, will be re-incremented in insert()
-
-        // Insert old -> new array
-        for (int i = 0; i < oldCapacity; i++) {
-            if (oldArr[i] != nullptr && !oldArr[i]->key.empty()) {
-                insert(oldArr[i]->key, oldArr[i]->value);
+    int size() {
+        int size = 0;
+        for (auto& bucket : buckets) {
+            std::lock_guard lock(mutexes[size]);
+            Node* currentNode;
+            if (bucket.empty()) {currentNode = nullptr;} else {currentNode = bucket[0];}
+            while (currentNode != nullptr) {
+                size++;
+                currentNode = currentNode->next;
             }
         }
-        delete[] oldArr;
+        return size;
     }
 
-    void insert(const K& key, const V& value) {
-        if ((float)mapsize / capacity >= loadFactor) { rehash(); }
-
-        HashNode<K, V>* temp = new HashNode<K, V>(key, value);
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
-
-        while (arr[hash1] != nullptr && arr[hash1]->key != key && !arr[hash1]->key.empty()) {
-            hash1 = (hash1 + hash2) % capacity; 
-        }
-
-        if (arr[hash1] == nullptr || arr[hash1]->key.empty()) { mapsize++; }
-        arr[hash1] = temp; // insert pair
-    }
-
-    V erase(const K& key) {
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
-
-        while (arr[hash1] != nullptr) {
-            if (arr[hash1]->key == key) {
-                HashNode<K, V>* temp = arr[hash1];
-                arr[hash1] = new HashNode<K, V>("", V());
-                return temp->value;
+    bool empty() {
+        for (auto& bucket : buckets) {
+            std::lock_guard lock(mutexes[0]);
+            if (!bucket.empty()) {
+                return false;
             }
-            hash1 = (hash1 + hash2) % capacity;
         }
-        return V();
+        return true;
     }
 
-    V& operator[](const K& key) {
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
+    void clear() {
+        for (auto& bucket : buckets) {
+            std::lock_guard lock(mutexes[0]);
+            Node* currentNode;
+            if (bucket.empty()) {
+                currentNode = nullptr;
+            } else {
+                currentNode = bucket[0];
+            }
+            while (currentNode != nullptr) {
+                Node* temp = currentNode;
+                currentNode = currentNode->next;
+                delete temp;
+            }
+            bucket.clear();
+        }
+    }
 
-        while (arr[hash1] != nullptr && arr[hash1]->key != key) {
-            hash1 = (hash1 + hash2) % capacity;
+    void insert(const K& first, const V& second) {
+        std::unique_lock lock(getMutex(first));
+        std::size_t hashV = hashFunction(first);
+        std::size_t index = hashV % buckets.size();
+
+        Node* newNode = new Node(first, second);
+        if (buckets[index].empty()) {
+            newNode->next = nullptr;
+        } else {
+            newNode->next = buckets[index][0];
+        }
+        buckets[index] = {newNode};
+    }
+
+    void erase(const K& first) {
+        std::unique_lock lock(getMutex(first));
+        std::size_t hashV = hashFunction(first);
+        std::size_t index = hashV % buckets.size();
+
+        Node* currentNode;
+        if (buckets[index].empty()) {
+            currentNode = nullptr;
+        } else {
+            currentNode = buckets[index][0];
+        }
+        Node* prev = nullptr;
+
+        while (currentNode != nullptr) {
+            if (currentNode->first == first) {
+                if (prev == nullptr) {
+                    buckets[index][0] = currentNode->next;
+                } else {
+                    prev->next = currentNode->next;
+                }
+                delete currentNode;
+                return;
+            }
+            prev = currentNode;
+            currentNode = currentNode->next;  // No need to cast here
+        }
+    }
+
+    // check if the key exists in the hashmap
+    V& operator[](const K& first) {
+        std::unique_lock lock(getMutex(first));
+        std::size_t hashV = hashFunction(first);
+        std::size_t index = hashV % buckets.size();
+
+        Node* currentNode;
+        if (buckets[index].empty()) {
+            currentNode = nullptr;
+        } else {
+            currentNode = buckets[index][0];
+        }
+        while (currentNode != nullptr) {
+            if (currentNode->first == first) {
+                return currentNode->second;
+            }
+            currentNode = currentNode->next;
         }
 
-        if (arr[hash1] == nullptr) {
-            arr[hash1] = new HashNode<K, V>(key, V()); 
-            mapsize++;
+        // key is not found, insert new node with default key
+        V defaultV = V();
+        Node* newNode = new Node(first, defaultV);
+        if (buckets[index].empty()) {
+            newNode->next = nullptr;
+        } else {
+            newNode->next = buckets[index][0];
         }
-
-        return arr[hash1]->value;
+        buckets[index] = {newNode};
+        return newNode->second;  // reference to the new value
     }   
 
-    class HashIterator {
-    public:
-        HashNode<K, V>** current;
-        HashNode<K, V>** end;
+    ~HashMap() {
+        for (auto& bucket : buckets) {
+            Node* currentNode;
+            if (bucket.empty()) {
+                currentNode = nullptr;
+            } else {
+                currentNode = bucket[0];
+            }
+            while (currentNode != nullptr) {
+                Node* temp = currentNode;
+                currentNode = currentNode->next;
+                delete temp;
+            }
+        }
+    }
 
-        HashIterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {}
+class HashIterator {
+    private:
+        HashMap& hashMapptr;
+        typename std::vector<std::vector<Node*>>::iterator bucketIt;
+        Node* nodeIt;
+
+    public:
+        HashIterator(HashMap& hashMapptr, typename std::vector<std::vector<Node*>>::iterator bucketIt, Node* node)
+        : hashMapptr(hashMapptr), bucketIt(bucketIt), nodeIt(node) {}
 
         bool operator!=(const HashIterator& other) const {
-            return current != other.current;
+            return bucketIt != other.bucketIt || nodeIt != other.nodeIt;
         }
 
         bool operator==(const HashIterator& other) const {
-            return current == other.current;  
-        }   
-
-        void operator++() {
-            do {
-                current++;
-            } while (current != end && (*current) == nullptr);
+            return bucketIt == other.bucketIt && nodeIt == other.nodeIt;
         }
 
-        HashNode<K, V>& operator*() {
-            return **current;
+        void operator++() {
+            if (nodeIt != nullptr) {
+                nodeIt = nodeIt->next;
+            }
+            while (nodeIt == nullptr && bucketIt != hashMapptr.buckets.end()) {
+                ++bucketIt;
+                if (bucketIt != hashMapptr.buckets.end()) {
+                    if (bucketIt->empty()) {
+                        nodeIt = nullptr;
+                    } else {
+                        nodeIt = (*bucketIt)[0];
+                    }
+                }
+            }
+        }
+
+        std::pair<K, V> operator*() {
+            return {nodeIt->first, nodeIt->second};
         }
     };
 
     HashIterator begin() {
-        for (int i = 0; i < capacity; i++) {
-            if (arr[i] != nullptr) {
-                return HashIterator(&arr[i], &arr[capacity]);
-            }
+        if (buckets.empty()) {
+            return HashIterator(*this, buckets.begin(), nullptr); // empty hashmap
+        } else {
+            return HashIterator(*this, buckets.begin(), buckets[0][0]); // first node
         }
-        return end();
     }
 
     HashIterator end() {
-        return HashIterator(&arr[capacity], &arr[capacity]);
+        return HashIterator(*this, buckets.end(), nullptr);
     }
 
     HashIterator find(const K& key) {
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
-
-        while (arr[hash1] != nullptr) {
-            if (arr[hash1]->key == key) {
-                return HashIterator(&arr[hash1], &arr[capacity]);
-            }
-            hash1 = (hash1 + hash2) % capacity;
+        size_t index = hashFunction(key) % buckets.size();
+        Node* currentNode;
+        if (buckets[index].empty()) {
+            currentNode = nullptr;
+        } else {
+            currentNode = buckets[index][0];
         }
-        return end();
+        while (currentNode != nullptr) {
+            if (currentNode->first == key) {
+                return HashIterator(*this, buckets.begin() + index, currentNode);
+            }
+            currentNode = currentNode->next;
+        }
+        return HashIterator(*this, buckets.begin() + index, nullptr);
     }
 };
 
