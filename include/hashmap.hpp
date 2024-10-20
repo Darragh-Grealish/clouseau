@@ -1,163 +1,226 @@
 #pragma once
 #include <functional>
-using namespace std;
+#include <stdexcept>
 
-template <typename K, typename V> class HashNode {
-public:
-    K key;
-    V value;
+template <typename K, typename V>
+class HashMap {
+private:
+    struct Node {
+        K key;
+        V value;
+        bool isOccupied;
+        bool isDeleted;
+        
+        Node() : isOccupied(false), isDeleted(false) {}
+        Node(const K& k, const V& v) : key(k), value(v), isOccupied(true), isDeleted(false) {}
+    };
 
-    HashNode(const K& key, const V& value) : key(key), value(value) {}
-};
+    Node* buckets;
+    size_t capacity;
+    size_t numElements;
+    static constexpr float MAX_LOAD_FACTOR = 0.7f;
+    static constexpr size_t INITIAL_CAPACITY = 64;
 
-template <typename K, typename V> class HashMap {
-public:
-    HashNode<K, V>** arr;
-    int capacity;
-    int mapsize;
-    float loadFactor;
-
-    HashMap() {
-        capacity = 40;
-        mapsize = 0;
-        loadFactor = 0.75;
-        arr = new HashNode<K, V>*[capacity];
-
-        for (int i = 0; i < capacity; i++)
-            arr[i] = nullptr;
+    size_t hashFunction(const K& key) const {
+        return std::hash<K>{}(key);
     }
 
-    int firstHash(const K& key) {
-        size_t hash = std::hash<K>()(key); 
-        return hash % capacity;
+    size_t probe(size_t hash, size_t i) const {
+        return (hash + (i + i * i) / 2) & (capacity - 1);
     }
 
-    int secondHash(const K& key) {
-        size_t hash = std::hash<K>()(key); 
-        return (7 - (hash % 7));
-    }
-
-    int size() { return mapsize; }
-
-    bool empty() { return mapsize == 0; }
-
-    void rehash() {
-        int oldCapacity = capacity;
-        capacity = 2 * capacity;
-        HashNode<K, V>** oldArr = arr;
-        arr = new HashNode<K, V>*[capacity]; 
-
-        for (int i = 0; i < capacity; i++) {
-            arr[i] = nullptr;
+    void growIfNeeded() {
+        if (static_cast<float>(numElements) / capacity >= MAX_LOAD_FACTOR) {
+            resize(capacity * 2);
         }
+    }
 
-        mapsize = 0; // Reset mapsize, will be re-incremented in insert()
+    void resize(size_t newCapacity) {
+        Node* oldBuckets = buckets;
+        size_t oldCapacity = capacity;
+        
+        buckets = new Node[newCapacity];
+        capacity = newCapacity;
+        numElements = 0;
 
-        // Insert old -> new array
-        for (int i = 0; i < oldCapacity; i++) {
-            if (oldArr[i] != nullptr && !oldArr[i]->key.empty()) {
-                insert(oldArr[i]->key, oldArr[i]->value);
+        for (size_t i = 0; i < oldCapacity; i++) {
+            if (oldBuckets[i].isOccupied && !oldBuckets[i].isDeleted) {
+                insert(oldBuckets[i].key, oldBuckets[i].value);
             }
         }
-        delete[] oldArr;
+
+        delete[] oldBuckets;
+    }
+
+public:
+    HashMap() : capacity(INITIAL_CAPACITY), numElements(0) {
+        buckets = new Node[capacity];
+    }
+
+    ~HashMap() {
+        delete[] buckets;
     }
 
     void insert(const K& key, const V& value) {
-        if ((float)mapsize / capacity >= loadFactor) { rehash(); }
+        growIfNeeded();
+        
+        size_t hash = hashFunction(key);
+        size_t i = 0;
+        size_t index;
+        size_t firstDeleted = capacity;
 
-        HashNode<K, V>* temp = new HashNode<K, V>(key, value);
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
-
-        while (arr[hash1] != nullptr && arr[hash1]->key != key && !arr[hash1]->key.empty()) {
-            hash1 = (hash1 + hash2) % capacity; 
-        }
-
-        if (arr[hash1] == nullptr || arr[hash1]->key.empty()) { mapsize++; }
-        arr[hash1] = temp; // insert pair
-    }
-
-    V erase(const K& key) {
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
-
-        while (arr[hash1] != nullptr) {
-            if (arr[hash1]->key == key) {
-                HashNode<K, V>* temp = arr[hash1];
-                arr[hash1] = new HashNode<K, V>("", V());
-                return temp->value;
+        do {
+            index = probe(hash, i++);
+            
+            if (!buckets[index].isOccupied) {
+                if (firstDeleted != capacity) {
+                    index = firstDeleted;
+                }
+                buckets[index] = Node(key, value);
+                numElements++;
+                return;
             }
-            hash1 = (hash1 + hash2) % capacity;
-        }
-        return V();
+            else if (buckets[index].isDeleted && firstDeleted == capacity) {
+                firstDeleted = index;
+            }
+            else if (!buckets[index].isDeleted && buckets[index].key == key) {
+                buckets[index].value = value;
+                return;
+            }
+        } while (i < capacity);
+
+        throw std::runtime_error("HashMap is full");
     }
 
     V& operator[](const K& key) {
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
+        growIfNeeded();
+        
+        size_t hash = hashFunction(key);
+        size_t i = 0;
+        size_t index;
+        size_t firstDeleted = capacity;
 
-        while (arr[hash1] != nullptr && arr[hash1]->key != key) {
-            hash1 = (hash1 + hash2) % capacity;
+        do {
+            index = probe(hash, i++);
+            
+            if (!buckets[index].isOccupied) {
+                if (firstDeleted != capacity) {
+                    index = firstDeleted;
+                }
+                buckets[index] = Node(key, V());
+                numElements++;
+                return buckets[index].value;
+            }
+            else if (buckets[index].isDeleted && firstDeleted == capacity) {
+                firstDeleted = index;
+            }
+            else if (!buckets[index].isDeleted && buckets[index].key == key) {
+                return buckets[index].value;
+            }
+        } while (i < capacity);
+
+        throw std::runtime_error("HashMap is full");
+    }
+
+    bool erase(const K& key) {
+        size_t hash = hashFunction(key);
+        size_t i = 0;
+        size_t index;
+
+        do {
+            index = probe(hash, i++);
+            
+            if (!buckets[index].isOccupied) {
+                return false;
+            }
+            
+            if (!buckets[index].isDeleted && buckets[index].key == key) {
+                buckets[index].isDeleted = true;
+                numElements--;
+                return true;
+            }
+        } while (i < capacity);
+
+        return false;
+    }
+
+    size_t size() const { return numElements; }
+    bool empty() const { return numElements == 0; }
+
+    void clear() {
+        for (size_t i = 0; i < capacity; i++) {
+            buckets[i].isOccupied = false;
+            buckets[i].isDeleted = false;
+        }
+        numElements = 0;
+    }
+
+    // Iterator implementation
+    class Iterator {
+    private:
+        Node* buckets;
+        size_t capacity;
+        size_t index;
+
+        void findNext() {
+            while (index < capacity && 
+                   (!buckets[index].isOccupied || buckets[index].isDeleted)) {
+                ++index;
+            }
         }
 
-        if (arr[hash1] == nullptr) {
-            arr[hash1] = new HashNode<K, V>(key, V()); 
-            mapsize++;
-        }
-
-        return arr[hash1]->value;
-    }   
-
-    class HashIterator {
     public:
-        HashNode<K, V>** current;
-        HashNode<K, V>** end;
-
-        HashIterator(HashNode<K, V>** curr, HashNode<K, V>** end) : current(curr), end(end) {}
-
-        bool operator!=(const HashIterator& other) const {
-            return current != other.current;
+        Iterator(Node* b, size_t c, size_t i) 
+            : buckets(b), capacity(c), index(i) {
+            findNext();
         }
 
-        bool operator==(const HashIterator& other) const {
-            return current == other.current;  
-        }   
-
-        void operator++() {
-            do {
-                current++;
-            } while (current != end && (*current) == nullptr);
+        Iterator& operator++() {
+            if (index < capacity) {
+                ++index;
+                findNext();
+            }
+            return *this;
         }
 
-        HashNode<K, V>& operator*() {
-            return **current;
+        bool operator==(const Iterator& other) const {
+            return index == other.index;
+        }
+
+        bool operator!=(const Iterator& other) const {
+            return !(*this == other);
+        }
+
+        Node& operator*() {
+            return buckets[index];
         }
     };
 
-    HashIterator begin() {
-        for (int i = 0; i < capacity; i++) {
-            if (arr[i] != nullptr) {
-                return HashIterator(&arr[i], &arr[capacity]);
-            }
-        }
-        return end();
+    Iterator begin() {
+        return Iterator(buckets, capacity, 0);
     }
 
-    HashIterator end() {
-        return HashIterator(&arr[capacity], &arr[capacity]);
+    Iterator end() {
+        return Iterator(buckets, capacity, capacity);
     }
 
-    HashIterator find(const K& key) {
-        int hash1 = firstHash(key);
-        int hash2 = secondHash(key);
+    Iterator find(const K& key) {
+        size_t hash = hashFunction(key);
+        size_t i = 0;
+        size_t index;
 
-        while (arr[hash1] != nullptr) {
-            if (arr[hash1]->key == key) {
-                return HashIterator(&arr[hash1], &arr[capacity]);
+        do {
+            index = probe(hash, i++);
+            
+            if (!buckets[index].isOccupied) {
+                return end();
             }
-            hash1 = (hash1 + hash2) % capacity;
-        }
+            
+            if (!buckets[index].isDeleted && buckets[index].key == key) {
+                return Iterator(buckets, capacity, index);
+            }
+        } while (i < capacity);
+
         return end();
     }
 };
-
