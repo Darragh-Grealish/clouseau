@@ -3,6 +3,8 @@
 #include "trie.hpp"  
 #include "array_list.hpp"
 #include <iostream>
+#include <algorithm>
+#include <cctype>
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -30,6 +32,15 @@ void search_handler(ArrayList<std::string> args) {
         std::cout << "==============================================" << std::endl;
         std::cout << "Enter a prefix to search (or 'exit' to quit): ";
         std::cin >> prefix;
+
+        std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
+        prefix.erase(std::remove_if(prefix.begin(), prefix.end(),
+            [](unsigned char c) { return !std::isalnum(c); }), prefix.end());
+
+        if (prefix.empty()) {
+            std::cout << "No valid input provided." << std::endl;
+            continue; 
+        }
 
         if (prefix == "exit") {
             break;
