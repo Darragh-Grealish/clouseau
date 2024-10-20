@@ -36,18 +36,25 @@ TEST(IndexerTest, FileWordCount_CountsWords) {
   std::cout << "Creating directory: " << temp_dir << std::endl;
   std::filesystem::create_directory(temp_dir);
   std::cout << "Creating temporary file: file1.txt" << std::endl;
-  create_temp_file(temp_dir, "file1.txt", "word1 word2 word3 word1 word2");
-
-  std::cout << "Initializing Indexer" << std::endl;
+  create_temp_file(temp_dir, "file1.txt", "hello world world");
+                   std::cout << "Initializing Indexer" << std::endl;
   Indexer indexer(temp_dir);
   std::cout << "Calling file_word_count" << std::endl;
   HashMap<std::string, int> word_count = indexer.file_word_count("file1.txt");
 
   std::cout << "Checking word counts" << std::endl;
-  EXPECT_EQ(word_count["word1"], 2);
-  EXPECT_EQ(word_count["word2"], 2);
-  EXPECT_EQ(word_count["word3"], 1);
 
+  if (word_count.find("hello") != word_count.end()) {
+    EXPECT_EQ(word_count["hello"], 1);
+  } else {
+    FAIL();
+  }
+
+  if (word_count.find("world") != word_count.end()) {
+    EXPECT_EQ(word_count["world"], 2);
+  } else {
+    FAIL();
+  }
   std::cout << "Removing directory: " << temp_dir << std::endl;
   std::filesystem::remove_all(temp_dir);
 }
