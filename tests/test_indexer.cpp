@@ -1,5 +1,6 @@
 #include "indexer.h"
 #include "hashmap.hpp"
+#include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <gtest/gtest.h>
