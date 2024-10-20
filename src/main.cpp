@@ -1,10 +1,11 @@
 #include "cli.h"
 #include "indexer.h"
+#include "trie.hpp"  
 #include "array_list.hpp"
 #include <iostream>
 #ifdef _WIN32
 #include <direct.h>
-#else 
+#else
 #include <libgen.h>
 #endif
 
@@ -14,63 +15,81 @@ void search_handler(ArrayList<std::string> args) {
         return;
     }
 
-
-    std::cout << "Searching: " << args[1] << std::endl;
+    std::cout << "Searching index: " << args[1] << std::endl;
 
     Indexer indexer(args[1]);
     indexer.deserialize_index();
     std::unordered_map<std::string, Frequency> index = indexer.get_index();
+
+
+    Trie trie;
+    trie.load_index(indexer);
+
+    while (true) {
+        std::string prefix;
+        std::cout << "==============================================" << std::endl;
+        std::cout << "Enter a prefix to search (or 'exit' to quit): ";
+        std::cin >> prefix;
+
+        if (prefix == "exit") {
+            break;
+        }
+
+        ArrayList<std::string> results = trie.search(prefix);
+
+        if (results.size() == 0) {
+            std::cout << "No results found for prefix: " << prefix << std::endl;
+            continue; 
+        } 
         
-//     while (true) {
-//         std::string prefix;
-//         std::cout << "Enter a prefix to search: ";
-//         std::cin >> prefix;
-//
-//         ArrayList<std::string> results = trie.search(prefix);
-//
-//         if (results.size() == 0) {
-//             std::cout << "No results found." << std::endl;
-//         } else {
-//             int result_count = results.size();
-//             int display_count = 0;
-//
-//             while (result_count > 0) {
-//                 std::cout << "\nSearch Results:" << std::endl;
-//                 for (int i = 0; i < 10 && i < result_count; i++) {
-//                     std::string file_path = dirPath + "/" + results[display_count];
-//                     std::string title = results[display_count];
-//
-//                     std::cout << "Title: " << title << std::endl;
-//                     std::cout << "File Path: " << file_path << std::endl;
-//                     std::cout << std::endl;
-//
-//                     display_count++;
-//                 }
-//
-//                 result_count -= 10;
-//
-//                 if (result_count > 0) {
-//                     std::cout << "Press [Enter] to display the next 10 results, or type 'quit' to exit: ";
-//                     std::string response;
-//                     std::cin.ignore(); 
-//                     std::getline(std::cin, response);
-//
-//                     if (response == "quit") {
-//                         return; 
-//                     } else if (response.empty()) {
-//                         continue;
-//                     } else {
-//                         std::cout << "Invalid input. Please press [Enter] or type 'quit'." << std::endl;
-//                         continue;
-//                     }
-//                 } else {
-//                     std::cout << "No more entries found. Please search for a new word." << std::endl;
-//                     break;
-//                 }
-//             }
-//         }
-//     }
- }
+        const int resultsPerPage = 10;
+        int totalResults = results.size();
+        int currentPage = 0;
+
+        while (true) {
+            int start = currentPage * resultsPerPage;
+            int end = std::min(start + resultsPerPage, totalResults);
+            
+            std::cout << "\nSearch Results for prefix '" << prefix << "':" << std::endl;
+            std::cout << "----------------------------------------------" << std::endl;
+
+            for (int i = start; i < end; ++i) {
+                const std::string& result = results[i];
+                std::cout << result << std::endl;
+
+                if (index.find(result) != index.end()) {
+                    const Frequency& freq = index[result]; 
+                    std::cout << "Total Occurrences: " << freq.total << std::endl;
+                    std::cout << "IDF: " << freq.idf << std::endl;
+
+                    for (const FileFrequency& file_freq : freq.files) {
+                        std::cout << "File: " << file_freq.file 
+                                  << ", Count: " << file_freq.count 
+                                  << ", TF: " << file_freq.tf << std::endl;
+                    }
+                } else {
+                    std::cout << "No file information found for word: " << prefix << std::endl;
+                }
+                std::cout << std::endl;
+            }
+
+            if (end >= totalResults) {
+                std::cout << "No more results to show." << std::endl;
+                break; 
+            }
+
+            std::string choice;
+            std::cout << "Do you want to see more results? (y/n): ";
+            std::cin >> choice;
+
+            if (choice == "y" || choice == "Y") {
+                currentPage++;
+            } else {
+                break;
+            }
+        }
+    }
+}
 
 void index_handler(ArrayList<std::string> args) {
     if (args.size() != 2) {

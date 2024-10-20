@@ -3,6 +3,7 @@
 #include "array_list.hpp"
 #include <string>
 #include <unordered_map>
+#include "indexer.h"
 
 class TrieNode {
 public:
@@ -21,6 +22,7 @@ public:
     Trie() : root(new TrieNode('\0')) {}
 
     void insert(const std::string& word, const std::string& file);
-
     ArrayList<std::string> search(const std::string& prefix);
+    void load_index(const Indexer& indexer); 
+    void find_words(TrieNode* node, const std::string& prefix, ArrayList<std::string>& results);
 };

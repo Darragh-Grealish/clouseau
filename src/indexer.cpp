@@ -142,7 +142,7 @@ void Indexer::serialize_index() {
   std::cout << "Index written to " << indexFile << std::endl;
 }
 
-std::unordered_map<std::string, Frequency> Indexer::get_index() {
+std::unordered_map<std::string, Frequency> Indexer::get_index() const {
   return index;
 }
 
