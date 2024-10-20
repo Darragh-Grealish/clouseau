@@ -33,7 +33,7 @@ public:
   std::unordered_map<std::string, int> file_word_count(const std::string &file);
 
   // NOTE: Returns the index
-  std::unordered_map<std::string, Frequency> get_index();
+  std::unordered_map<std::string, Frequency> get_index() const;
 
 private:
   std::unordered_map<std::string, Frequency> index;

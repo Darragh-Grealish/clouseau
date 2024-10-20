@@ -47,3 +47,7 @@ add_executable(test_indexer tests/test_indexer.cpp src/indexer.cpp src/trie.cpp)
 target_link_libraries(test_indexer gtest gtest_main)
 gtest_discover_tests(test_indexer)
 
+# TEST: Trie implementation
+add_executable(test_trie tests/test_trie.cpp src/trie.cpp src/indexer.cpp)
+target_link_libraries(test_trie gtest gtest_main)
+gtest_discover_tests(test_trie)
