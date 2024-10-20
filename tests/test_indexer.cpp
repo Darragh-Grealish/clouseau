@@ -98,7 +98,8 @@ TEST(IndexerTest, DeserializeIndex_ReadsFromFile) {
 
   Indexer new_indexer(temp_dir);
   new_indexer.deserialize_index();
-  HashMap<std::string, Frequency> idx2 = new_indexer.get_index();
+  // HashMap<std::string, Frequency> idx2 = new_indexer.get_index();
+  unordered_map<std::string, Frequency> idx2 = new_indexer.get_index();
 
   EXPECT_EQ(idx1.size(), idx2.size());
   EXPECT_EQ(idx1["word1"].total, idx2["word1"].total);

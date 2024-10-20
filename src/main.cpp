@@ -19,9 +19,8 @@ void search_handler(ArrayList<std::string> args) {
 
     Indexer indexer(args[1]);
     indexer.deserialize_index();
-    std::cout << "Index deserialized. Got HERE 1" << std::endl;
-    HashMap<std::string, Frequency> index = indexer.get_index();
-    std::cout << "Got HERE 2" << std::endl;
+    // HashMap<std::string, Frequency> index = indexer.get_index();
+    std::unordered_map<std::string, Frequency> index = indexer.get_index();
         
 //     while (true) {
 //         std::string prefix;
