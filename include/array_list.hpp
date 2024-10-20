@@ -52,10 +52,10 @@ public:
   Iterator end() { return Iterator(data_ + size_); }
 
 private:
-  T *data_;         
-  size_t size_;     
-  size_t capacity_; 
-  std::mutex mtx_;  
+  T *data_;
+  size_t size_;
+  size_t capacity_;
+  std::mutex mtx_;
 
   void resize_if_needed();
   void copy_from(const ArrayList &other);
@@ -64,16 +64,15 @@ private:
 
 // NOTE: Implementation
 
-template <typename T> 
+template <typename T>
 ArrayList<T>::ArrayList() : data_(nullptr), size_(0), capacity_(0) {}
 
-template <typename T> 
+template <typename T>
 ArrayList<T>::ArrayList(size_t capacity) : size_(0), capacity_(capacity) {
   data_ = new T[capacity];
 }
 
-
-template <typename T> 
+template <typename T>
 ArrayList<T>::ArrayList(std::initializer_list<T> list)
     : ArrayList(list.size()) {
   size_ = 0;
@@ -197,4 +196,3 @@ template <typename T> void ArrayList<T>::move_from(ArrayList &&other) {
   other.size_ = 0;
   other.capacity_ = 0;
 }
-

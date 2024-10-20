@@ -1,5 +1,5 @@
-#include <iostream>
 #include "cli.h"
+#include <iostream>
 
 CLI::CLI(std::string name, int argc, char *argv[]) {
   this->name = name;
@@ -8,21 +8,19 @@ CLI::CLI(std::string name, int argc, char *argv[]) {
     return;
   }
 
-  for (int i = 1; i < argc; i++) {  // NOTE: skip first arg as it's the program name
+  for (int i = 1; i < argc;
+       i++) { // NOTE: skip first arg as it's the program name
     args.push_back(argv[i]);
   }
 }
 
-void CLI::add_cmd(std::string name, Cmd cmd) {
-  cmds[name] = cmd;
-}
+void CLI::add_cmd(std::string name, Cmd cmd) { cmds[name] = cmd; }
 
 void CLI::print_help() {
   std::cout << "Usage: " << name << " <command> [args...]" << std::endl;
   std::cout << "Commands:" << std::endl;
   for (auto &cmd : cmds) {
-    std::cout << "  " << cmd.key << " - " << cmd.value.description
-              << std::endl;
+    std::cout << "  " << cmd.key << " - " << cmd.value.description << std::endl;
   }
 }
 

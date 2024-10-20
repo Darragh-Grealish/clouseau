@@ -1,9 +1,9 @@
 #pragma once
 
 #include "array_list.hpp"
-#include <string>
 #include "hashmap.hpp"
 #include <functional>
+#include <string>
 
 struct Cmd {
   std::string description;
