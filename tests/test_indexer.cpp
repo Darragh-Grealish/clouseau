@@ -42,7 +42,6 @@ TEST(IndexerTest, FileWordCount_CountsWords) {
   EXPECT_EQ(word_count["word2"], 2);
   EXPECT_EQ(word_count["word3"], 1);
 
-  // Clean up
   std::filesystem::remove_all(temp_dir);
 }
 
@@ -58,10 +57,8 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
   indexer.index_directory();
   indexer.serialize_index();
 
-  // Check if the index file was created
   EXPECT_TRUE(std::filesystem::exists(temp_dir + "/clouseau.csv"));
 
-  // Read the file and check contents
   std::ifstream index_file(temp_dir + "/clouseau.csv");
   std::string line;
   std::getline(index_file, line); // Skip header
@@ -79,7 +76,6 @@ TEST(IndexerTest, SerializeIndex_WritesToFile) {
     EXPECT_EQ(total, expected_totals[word]);
   }
 
-  // Clean up
   index_file.close();
   std::filesystem::remove(temp_dir + "/clouseau.csv");
   std::filesystem::remove_all(temp_dir);

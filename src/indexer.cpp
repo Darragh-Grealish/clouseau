@@ -9,10 +9,10 @@
 #include <fstream>
 #include <iostream>
 #include <locale>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 #include <thread>
+#include <sstream>
+#include <stdexcept>
 
 Indexer::Indexer(const std::string &directory) {
   this->directory = directory;
@@ -25,9 +25,10 @@ Indexer::Indexer(const std::string &directory) {
   }
 }
 
-HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
+HashMap<std::string, int>
+Indexer::file_word_count(const std::string &file) {
   HashMap<std::string, int> word_count;
-  std::ifstream input(directory + "/" + file);
+  std::ifstream input(std::filesystem::path(directory) / file);
   if (!input.is_open()) {
     throw std::runtime_error("Could not open file");
   }
@@ -129,7 +130,8 @@ void Indexer::serialize_index() {
   index_file << std::endl;
 
   for (auto const &pair : index) {
-    index_file << pair.key << "," << pair.value.idf << "," << pair.value.total;
+    index_file << pair.key << "," << pair.value.idf << ","
+               << pair.value.total;
     for (int i = 0; i < pair.value.files.size(); i++) {
       index_file << "," << pair.value.files[i].file << ","
                  << pair.value.files[i].tf;
@@ -141,54 +143,58 @@ void Indexer::serialize_index() {
   std::cout << "Index written to " << indexFile << std::endl;
 }
 
-HashMap<std::string, Frequency> Indexer::get_index() { return index; }
+HashMap<std::string, Frequency> Indexer::get_index() {
+  return index;
+}
 
 void Indexer::deserialize_index() {
-  std::ifstream index_file(directory + "/" + indexFile);
-  if (!index_file.is_open()) {
-    throw std::runtime_error("Unable to open index file for reading");
-  }
-
-  index.clear(); // Clear existing index
-
-  std::string line;
-  std::getline(index_file, line); // Skip header
-
-  while (std::getline(index_file, line)) {
-    std::istringstream iss(line);
-    std::string word;
-    double idf;
-    int total;
-
-    // Parse word, idf, and total count
-    if (!std::getline(iss, word, ',') || !(iss >> idf) || iss.get() != ',' ||
-        !(iss >> total)) {
-      throw std::runtime_error("Error parsing index file: word, idf, or total");
+    std::ifstream index_file(directory + "/" + indexFile);
+    if (!index_file.is_open()) {
+        throw std::runtime_error("Unable to open index file for reading");
     }
 
-    Frequency freq;
-    freq.idf = idf;
-    freq.total = total;
+    index.clear(); // Clear existing index
 
-    // Parse file and tf pairs
-    std::string file;
-    double tf;
-    char comma;
-    while (iss >> comma && comma == ',' && std::getline(iss, file, ',') &&
-           iss >> tf) {
-      FileFrequency file_freq;
-      file_freq.file = file;
-      file_freq.tf = tf;
-      // Calculate count from tf and total words in file
-      // Since tf = count/total_words, count = tf * total_words
-      int total_words = static_cast<int>(tf > 0 ? (1.0 / tf) : 0);
-      file_freq.count = static_cast<int>(tf * total_words);
-      freq.files.push_back(file_freq);
+    std::string line;
+    std::getline(index_file, line); // Skip header
+
+    while (std::getline(index_file, line)) {
+        std::istringstream iss(line);
+        std::string word;
+        double idf;
+        int total;
+
+        // Parse word, idf, and total count
+        if (!std::getline(iss, word, ',') ||
+            !(iss >> idf) || iss.get() != ',' ||
+            !(iss >> total)) {
+            throw std::runtime_error("Error parsing index file: word, idf, or total");
+        }
+
+        Frequency freq;
+        freq.idf = idf;
+        freq.total = total;
+
+        // Parse file and tf pairs
+        std::string file;
+        double tf;
+        char comma;
+        while (iss >> comma && comma == ',' &&
+               std::getline(iss, file, ',') &&
+               iss >> tf) {
+            FileFrequency file_freq;
+            file_freq.file = file;
+            file_freq.tf = tf;
+            // Calculate count from tf and total words in file
+            // Since tf = count/total_words, count = tf * total_words
+            int total_words = static_cast<int>(tf > 0 ? (1.0 / tf) : 0);
+            file_freq.count = static_cast<int>(tf * total_words);
+            freq.files.push_back(file_freq);
+        }
+
+        index[word] = freq;
     }
 
-    index[word] = freq;
-  }
-
-  index_file.close();
-  std::cout << "Index loaded from " << indexFile << std::endl;
+    index_file.close();
+    std::cout << "Index loaded from " << indexFile << std::endl;
 }
