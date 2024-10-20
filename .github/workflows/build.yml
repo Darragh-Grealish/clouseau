@@ -1,51 +1,50 @@
-name: C++ Build & Test
+name: Build and Test
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        submodules: true
+      uses: actions/checkout@v2
 
-    - name: Install dependencies on Ubuntu and macOS
-      if: matrix.os != 'windows-latest'
+    - name: Set up CMake
+      uses: lukka/get-cmake@v3
+
+    - name: Set up dependencies
       run: |
-        sudo apt-get update && sudo apt-get install -y cmake g++ || true
-        brew install cmake || true
+        if [ $RUNNER_OS == 'Linux' ]; then
+          sudo apt-get update
+          sudo apt-get install -y lcov
+        elif [ $RUNNER_OS == 'macOS' ]; then
+          brew install lcov
+        fi
 
-    - name: Install dependencies on Windows
-      if: matrix.os == 'windows-latest'
-      run: |
-        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' || true
+    - name: Configure CMake
+      run: cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" -B build
 
-    - name: Configure with CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-
-    - name: Build with CMake
+    - name: Build
       run: cmake --build build
 
-    - name: Run tests on Windows
-      if: matrix.os == 'windows-latest'
-      run: ctest --test-dir build -C Debug --output-on-failure
-
-    - name: Run tests on Unix
-      if: matrix.os != 'windows-latest'
+    - name: Run tests
       run: ctest --test-dir build --output-on-failure
 
+    - name: Capture coverage info
+      if: runner.os == 'Linux' || runner.os == 'macOS'
+      run: |
+        lcov --directory build --capture --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        lcov --list coverage.info
 
- 
+    - name: Upload coverage report
+      if: runner.os == 'Linux' || runner.os == 'macOS'
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: coverage.info
 
