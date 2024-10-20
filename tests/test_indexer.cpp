@@ -8,7 +8,7 @@
 void create_temp_file(const std::string &directory,
                       const std::string &file_name,
                       const std::string &content) {
-  std::ofstream file(directory + "/" + file_name);
+  std::ofstream file(std::filesystem::path(directory) / file_name);
   file << content;
   file.close();
 }
