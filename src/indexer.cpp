@@ -104,7 +104,7 @@ void Indexer::index_directory() {
   std::cout << "Indexing " << files.size() << " files with " << num_threads
             << " threads" << std::endl;
 
-  size_t files_per_thread = files.size() / num_threads;
+  int files_per_thread = files.size() / num_threads;
   for (int i = 0; i < num_threads; i++) {
     ArrayList<std::string> thread_files;
     for (int j = i * files_per_thread;
