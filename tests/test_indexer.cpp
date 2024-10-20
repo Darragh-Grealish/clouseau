@@ -30,7 +30,7 @@ TEST(IndexerTest, CreateTempFile) {
 // TEST: GIVEN a file with words WHEN file_word_count is called THEN it should
 // return the correct word frequency.
 TEST(IndexerTest, FileWordCount_CountsWords) {
-  std::string temp_dir = "./test_data";
+  std::string temp_dir = "test_data";
   std::filesystem::create_directory(temp_dir);
   create_temp_file(temp_dir, "file1.txt", "word1 word2 word3 word1 word2");
 
