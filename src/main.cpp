@@ -62,7 +62,7 @@ void search_handler(ArrayList<std::string> args) {
         for (const auto& token : tokens) {
             if (token == "and" || token == "or" || token == "not") {
                 lastOperator = token;
-                continue;
+                continue; 
             }
 
             ArrayList<std::string> tokenResults = trie.search(token);
@@ -86,14 +86,27 @@ void search_handler(ArrayList<std::string> args) {
             isFirstToken = false;
         }
 
-        const int resultsPerPage = 10;
-        int totalResults = results.size();
-        int currentPage = 0;
-
         if (results.empty()) {
             std::cout << "No results found for query: " << query << std::endl;
             continue; 
         }
+
+        std::unordered_map<std::string, double> relevance_scores;
+        for (const auto& result : results) {
+            if (index.find(result) != index.end()) {
+                const Frequency& freq = index[result];
+                double relevance = freq.total * freq.idf;
+                relevance_scores[result] = relevance;
+            }
+        }
+
+        std::vector<std::pair<std::string, double>> sortedResults(relevance_scores.begin(), relevance_scores.end());
+        std::sort(sortedResults.begin(), sortedResults.end(),
+                  [](const auto& a, const auto& b) { return a.second > b.second; });
+
+        const int resultsPerPage = 10;
+        int totalResults = sortedResults.size();
+        int currentPage = 0;
 
         while (true) {
             int start = currentPage * resultsPerPage;
@@ -102,25 +115,21 @@ void search_handler(ArrayList<std::string> args) {
             std::cout << "\nSearch Results for query '" << query << "':" << std::endl;
             std::cout << "----------------------------------------------" << std::endl;
 
-            for (auto it = results.begin(); it != results.end(); ++it) {
-                if (start-- > 0) continue;
-                if (end-- <= 0) break;
-                
-                const std::string& result = *it;
+            for (int i = start; i < end; ++i) {
+                const auto& pair = sortedResults[i];
+                const std::string& result = pair.first;
+                double relevance = pair.second;
 
-                if (index.find(result) != index.end()) {
-                    const Frequency& freq = index[result]; 
-                    std::cout << result << std::endl;
-                    std::cout << "Total Occurrences: " << freq.total << std::endl;
-                    std::cout << "IDF: " << freq.idf << std::endl;
+                const Frequency& freq = index[result];
+                std::cout << result << std::endl;
+                std::cout << "Relevance: " << relevance << std::endl;
+                std::cout << "Total Occurrences: " << freq.total << std::endl;
+                std::cout << "IDF: " << freq.idf << std::endl;
 
-                    for (const FileFrequency& file_freq : freq.files) {
-                        std::cout << "File: " << file_freq.file 
-                                  << ", Count: " << file_freq.count 
-                                  << ", TF: " << file_freq.tf << std::endl;
-                    }
-                } else {
-                    std::cout << "No file information found for word: " << result << std::endl;
+                for (const FileFrequency& file_freq : freq.files) {
+                    std::cout << "File: " << file_freq.file 
+                              << ", Count: " << file_freq.count 
+                              << ", TF: " << file_freq.tf << std::endl;
                 }
                 std::cout << std::endl;
             }
