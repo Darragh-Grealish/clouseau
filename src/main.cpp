@@ -5,6 +5,8 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <unordered_set> 
+#include <sstream>
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -23,53 +25,92 @@ void search_handler(ArrayList<std::string> args) {
     indexer.deserialize_index();
     std::unordered_map<std::string, Frequency> index = indexer.get_index();
 
-
     Trie trie;
     trie.load_index(indexer);
 
     while (true) {
-        std::string prefix;
+        std::string query;
         std::cout << "==============================================" << std::endl;
-        std::cout << "Enter a prefix to search (or 'exit' to quit): ";
-        std::cin >> prefix;
+        std::cout << "Enter a search query (or 'exit' to quit): ";
+        std::getline(std::cin, query);
 
-        std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
-        prefix.erase(std::remove_if(prefix.begin(), prefix.end(),
-            [](unsigned char c) { return !std::isalnum(c); }), prefix.end());
+        std::transform(query.begin(), query.end(), query.begin(), ::tolower);
+        query.erase(std::remove_if(query.begin(), query.end(),
+            [](unsigned char c) { return !std::isalnum(c) && c != ' '; }), query.end());
 
-        if (prefix.empty()) {
+        if (query.empty()) {
             std::cout << "No valid input provided." << std::endl;
             continue; 
         }
 
-        if (prefix == "exit") {
+        if (query == "exit") {
             break;
         }
 
-        ArrayList<std::string> results = trie.search(prefix);
+        std::istringstream iss(query);
+        std::vector<std::string> tokens;
+        std::string token;
 
-        if (results.size() == 0) {
-            std::cout << "No results found for prefix: " << prefix << std::endl;
-            continue; 
-        } 
-        
+        while (iss >> token) {
+            tokens.push_back(token);
+        }
+
+        std::unordered_set<std::string> results;
+        bool isFirstToken = true;
+        std::string lastOperator;
+
+        for (const auto& token : tokens) {
+            if (token == "and" || token == "or" || token == "not") {
+                lastOperator = token;
+                continue;
+            }
+
+            ArrayList<std::string> tokenResults = trie.search(token);
+
+            if (lastOperator == "or" || isFirstToken) {
+                results.insert(tokenResults.begin(), tokenResults.end());
+            } else if (lastOperator == "and") {
+                std::unordered_set<std::string> intersection;
+                for (const auto& result : results) {
+                    if (std::find(tokenResults.begin(), tokenResults.end(), result) != tokenResults.end()) {
+                        intersection.insert(result);
+                    }
+                }
+                results = intersection;
+            } else if (lastOperator == "not") {
+                for (const auto& result : tokenResults) {
+                    results.erase(result);
+                }
+            }
+
+            isFirstToken = false;
+        }
+
         const int resultsPerPage = 10;
         int totalResults = results.size();
         int currentPage = 0;
 
+        if (results.empty()) {
+            std::cout << "No results found for query: " << query << std::endl;
+            continue; 
+        }
+
         while (true) {
             int start = currentPage * resultsPerPage;
             int end = std::min(start + resultsPerPage, totalResults);
-            
-            std::cout << "\nSearch Results for prefix '" << prefix << "':" << std::endl;
+
+            std::cout << "\nSearch Results for query '" << query << "':" << std::endl;
             std::cout << "----------------------------------------------" << std::endl;
 
-            for (int i = start; i < end; ++i) {
-                const std::string& result = results[i];
-                std::cout << result << std::endl;
+            for (auto it = results.begin(); it != results.end(); ++it) {
+                if (start-- > 0) continue;
+                if (end-- <= 0) break;
+                
+                const std::string& result = *it;
 
                 if (index.find(result) != index.end()) {
                     const Frequency& freq = index[result]; 
+                    std::cout << result << std::endl;
                     std::cout << "Total Occurrences: " << freq.total << std::endl;
                     std::cout << "IDF: " << freq.idf << std::endl;
 
@@ -79,7 +120,7 @@ void search_handler(ArrayList<std::string> args) {
                                   << ", TF: " << file_freq.tf << std::endl;
                     }
                 } else {
-                    std::cout << "No file information found for word: " << prefix << std::endl;
+                    std::cout << "No file information found for word: " << result << std::endl;
                 }
                 std::cout << std::endl;
             }
@@ -92,6 +133,7 @@ void search_handler(ArrayList<std::string> args) {
             std::string choice;
             std::cout << "Do you want to see more results? (y/n): ";
             std::cin >> choice;
+            std::cin.ignore();
 
             if (choice == "y" || choice == "Y") {
                 currentPage++;
