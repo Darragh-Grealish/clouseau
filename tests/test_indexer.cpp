@@ -34,11 +34,11 @@ TEST(IndexerTest, FileWordCount_CountsWords) {
   create_temp_file(temp_dir, "file1.txt", "word1 word2 word3 word1 word2");
 
   Indexer indexer(temp_dir);
-  HashMap<std::string, int>* word_count = indexer.file_word_count("file1.txt");
+  HashMap<std::string, int> word_count = indexer.file_word_count("file1.txt");
 
-  EXPECT_EQ((*word_count)["word1"], 2);
-  EXPECT_EQ((*word_count)["word2"], 2);
-  EXPECT_EQ((*word_count)["word3"], 1);
+  EXPECT_EQ(word_count["word1"], 2);
+  EXPECT_EQ(word_count["word2"], 2);
+  EXPECT_EQ(word_count["word3"], 1);
 
   // Clean up
   std::filesystem::remove_all(temp_dir);
@@ -94,11 +94,11 @@ TEST(IndexerTest, DeserializeIndex_ReadsFromFile) {
   Indexer indexer(temp_dir);
   indexer.index_directory();
   indexer.serialize_index();
-  auto& idx1 = indexer.get_index();
+  auto idx1 = indexer.get_index();
 
   Indexer new_indexer(temp_dir);
   new_indexer.deserialize_index();
-  HashMap<std::string, Frequency>& idx2 = new_indexer.get_index();
+  HashMap<std::string, Frequency> idx2 = new_indexer.get_index();
 
   EXPECT_EQ(idx1.size(), idx2.size());
   EXPECT_EQ(idx1["word1"].total, idx2["word1"].total);

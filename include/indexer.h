@@ -30,10 +30,10 @@ public:
   void deserialize_index();
 
   // NOTE: Returns a map of words to their frequency
-  HashMap<std::string, int>* file_word_count(const std::string &file);
+  HashMap<std::string, int> file_word_count(const std::string &file);
 
   // NOTE: Returns the index
-  HashMap<std::string, Frequency>& get_index();
+  HashMap<std::string, Frequency> get_index();
 
 private:
   HashMap<std::string, Frequency> index;

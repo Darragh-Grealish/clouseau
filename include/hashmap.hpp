@@ -8,9 +8,6 @@ using namespace std;
 template <typename K, typename V, typename Hash = std::hash<K>>
 class HashMap {
 private:
-    HashMap(const HashMap&) = delete;            // copy constructor
-    HashMap& operator=(const HashMap&) = delete; // copy assignment operator
-
     struct Node {
         K first;
         V second;
@@ -19,22 +16,22 @@ private:
     };
 
     std::vector<std::vector<Node*>> buckets;
-    std::vector<std::mutex> mutexes;
+    std::vector<std::mutex>* mutexes;
     Hash hashFunction;
 
     // mutex for key
     std::mutex& getMutex(const K& first) {
         std::size_t hashV = hashFunction(first);
-        return mutexes[hashV % mutexes.size()];
+        return (*mutexes)[hashV % mutexes->size()]; // dereference pointer
     }
 
 public:
-    HashMap(std::size_t num_buckets = 16) : buckets(num_buckets), mutexes(num_buckets) {}
+    HashMap(std::size_t num_buckets = 16) : buckets(num_buckets), mutexes(new std::vector<std::mutex>(num_buckets)) {}
 
     int size() {
         int size = 0;
         for (auto& bucket : buckets) {
-            std::lock_guard lock(mutexes[size]);
+            std::lock_guard lock((*mutexes)[size]);
             Node* currentNode;
             if (bucket.empty()) {currentNode = nullptr;} else {currentNode = bucket[0];}
             while (currentNode != nullptr) {
@@ -47,7 +44,7 @@ public:
 
     bool empty() {
         for (auto& bucket : buckets) {
-            std::lock_guard lock(mutexes[0]);
+            std::lock_guard lock((*mutexes)[0]);
             if (!bucket.empty()) {
                 return false;
             }
@@ -57,7 +54,7 @@ public:
 
     void clear() {
         for (auto& bucket : buckets) {
-            std::lock_guard lock(mutexes[0]);
+            std::lock_guard lock((*mutexes)[0]);
             Node* currentNode;
             if (bucket.empty()) {
                 currentNode = nullptr;
@@ -160,6 +157,7 @@ public:
                 delete temp;
             }
         }
+        delete mutexes;
     }
 
 class HashIterator {
@@ -196,17 +194,22 @@ class HashIterator {
             }
         }
 
-        std::pair<K, V> operator*() {
-            return {nodeIt->first, nodeIt->second};
-        }
+        std::pair<K, V>& operator*() {
+            return *reinterpret_cast<std::pair<K, V>*>(&nodeIt->first);
+        }   
     };
 
     HashIterator begin() {
-        if (buckets.empty()) {
-            return HashIterator(*this, buckets.begin(), nullptr); // empty hashmap
-        } else {
-            return HashIterator(*this, buckets.begin(), buckets[0][0]); // first node
+        auto bucketIt = buckets.begin();
+        Node* node = nullptr;
+        // find first non-empty bucket
+        while (bucketIt != buckets.end() && (bucketIt->empty() || (*bucketIt)[0] == nullptr)) {
+            ++bucketIt;
         }
+        if (bucketIt != buckets.end() && !bucketIt->empty()) {
+            node = (*bucketIt)[0]; // set first node
+        }
+        return HashIterator(*this, bucketIt, node);
     }
 
     HashIterator end() {
