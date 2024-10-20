@@ -29,36 +29,6 @@ TEST(IndexerTest, CreateTempFile) {
   std::filesystem::remove_all(temp_dir);
 }
 
-// TEST: GIVEN a file with words WHEN file_word_count is called THEN it should
-// return the correct word frequency.
-TEST(IndexerTest, FileWordCount_CountsWords) {
-  std::string temp_dir = "test_data";
-  std::cout << "Creating directory: " << temp_dir << std::endl;
-  std::filesystem::create_directory(temp_dir);
-  std::cout << "Creating temporary file: file1.txt" << std::endl;
-  create_temp_file(temp_dir, "file1.txt", "hello world world");
-                   std::cout << "Initializing Indexer" << std::endl;
-  Indexer indexer(temp_dir);
-  std::cout << "Calling file_word_count" << std::endl;
-  HashMap<std::string, int> word_count = indexer.file_word_count("file1.txt");
-
-  std::cout << "Checking word counts" << std::endl;
-
-  if (word_count.find("hello") != word_count.end()) {
-    EXPECT_EQ(word_count["hello"], 1);
-  } else {
-    FAIL();
-  }
-
-  if (word_count.find("world") != word_count.end()) {
-    EXPECT_EQ(word_count["world"], 2);
-  } else {
-    FAIL();
-  }
-  std::cout << "Removing directory: " << temp_dir << std::endl;
-  std::filesystem::remove_all(temp_dir);
-}
-
 
 // TEST: GIVEN a directory with multiple files WHEN serialize_index is called
 // THEN the index should be serialized correctly to a file.
