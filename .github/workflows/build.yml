@@ -1,50 +1,73 @@
-name: Build and Test
-
-on: [push, pull_request]
+name: C++ Build & Test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        submodules: true
 
-    - name: Set up CMake
-      uses: lukka/get-cmake@v3
-
-    - name: Set up dependencies
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
       run: |
-        if [ $RUNNER_OS == 'Linux' ]; then
-          sudo apt-get update
-          sudo apt-get install -y lcov
-        elif [ $RUNNER_OS == 'macOS' ]; then
-          brew install lcov
-        fi
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ lcov
+
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install cmake lcov
+
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+        choco install opencppcoverage
 
     - name: Configure CMake
-      run: cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage" -B build
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
 
     - name: Build
-      run: cmake --build build
+      run: cmake --build build --config Debug
 
-    - name: Run tests
-      run: ctest --test-dir build --output-on-failure
-
-    - name: Capture coverage info
-      if: runner.os == 'Linux' || runner.os == 'macOS'
+    - name: Test with Coverage (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
       run: |
-        lcov --directory build --capture --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        cd build
+        ctest --output-on-failure
+        lcov --directory . --capture --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' '*/tests/*' '*/googletest/*' --output-file coverage.info
         lcov --list coverage.info
 
-    - name: Upload coverage report
-      if: runner.os == 'Linux' || runner.os == 'macOS'
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-report
-        path: coverage.info
+    - name: Test with Coverage (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        OpenCppCoverage.exe --sources src --export_type cobertura:coverage.xml --cover_children -- ctest --test-dir build -C Debug --output-on-failure
 
+    - name: Test (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd build
+        ctest --output-on-failure
+
+    # - name: Coverage Threshold Check
+    #   if: matrix.os == 'ubuntu-latest'
+    #   run: |
+    #     COVERAGE=$(lcov --list ./build/coverage.info | grep 'Total:' | awk '{print $4}' | cut -d'%' -f1)
+    #     if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+    #       echo "Code coverage is below 80% (Current: $COVERAGE%)"
+    #       exit 1
+    #     fi
