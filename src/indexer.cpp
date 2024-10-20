@@ -9,7 +9,7 @@
 #include <locale>
 #include <string>
 #include <thread>
-#include <unordered_map>
+#include "hashmap.hpp"
 #include <sstream>
 #include <stdexcept>
 
@@ -24,10 +24,11 @@ Indexer::Indexer(const std::string &directory) {
   }
 }
 
-std::unordered_map<std::string, int>
+HashMap<std::string, int>
 Indexer::file_word_count(const std::string &file) {
-  std::unordered_map<std::string, int> word_count;
+  HashMap<std::string, int> word_count;
   std::ifstream input(directory + "/" + file);
+  std::cout << "Indexing " << file << std::endl;
   if (!input.is_open()) {
     throw std::runtime_error("Could not open file");
   }
@@ -65,7 +66,7 @@ void Indexer::index_directory() {
 
   auto worker = [this](ArrayList<std::string> files) {
     for (const std::string &file : files) {
-      std::unordered_map<std::string, int> word_count = file_word_count(file);
+      HashMap<std::string, int> word_count = file_word_count(file);
       int total_words = word_count["__total_words__"];
       word_count.erase("__total_words__");
 
@@ -142,7 +143,8 @@ void Indexer::serialize_index() {
   std::cout << "Index written to " << indexFile << std::endl;
 }
 
-std::unordered_map<std::string, Frequency> Indexer::get_index() {
+// HashMap<std::string, Frequency> Indexer::get_index() {
+unordered_map<std::string, Frequency> Indexer::get_index() {
   return index;
 }
 
