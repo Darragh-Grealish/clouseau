@@ -23,72 +23,46 @@ Indexer::Indexer(const std::string &directory) {
     }
   }
 }
+
 HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
+  std::cout << "Opening file: " << directory + "/" + file << std::endl;
   HashMap<std::string, int> word_count;
-  std::ifstream input(std::filesystem::path(directory) / file);
+  std::ifstream input(directory + "/" + file);
   if (!input.is_open()) {
     throw std::runtime_error("Could not open file");
   }
-
   std::string line;
   int total_words = 0;
-
   while (std::getline(input, line)) {
     std::string clean_word;
 
-    for (char c : line) {
-      // If character is valid for a word
+    for (char &c : line) {
       if (std::isalnum(c, std::locale()) || c == '\'' || c == '-') {
         clean_word += std::tolower(c, std::locale());
-      }
-      // If we hit a delimiter
-      else if (!clean_word.empty()) {
-        // Remove any trailing punctuation
-        while (!clean_word.empty() &&
-               (clean_word.back() == '\'' || clean_word.back() == '-' ||
-                clean_word.back() == ',')) {
-          clean_word.pop_back();
-        }
-
-        // Only count if we still have a word after cleaning
+      } else {
         if (!clean_word.empty()) {
-          bool exists = word_count.find(clean_word) != word_count.end();
-          if (!exists) {
-            word_count.insert(clean_word, 1);
-          } else {
-           word_count[clean_word]++; 
-          }
+          std::cout << "Found word: " << clean_word << std::endl;
+          word_count[clean_word]++;
           total_words++;
+          clean_word.clear();
         }
-        clean_word.clear();
       }
     }
 
-    // Handle the last word in the line if it exists
-    if (!clean_word.empty()) {
-      // Remove any trailing punctuation
-      while (!clean_word.empty() &&
-             (clean_word.back() == '\'' || clean_word.back() == '-' ||
-              clean_word.back() == ',')) {
-        clean_word.pop_back();
-      }
+    clean_word.erase(std::remove(clean_word.begin(), clean_word.end(), ','),
+                     clean_word.end());
 
-      // Only count if we still have a word after cleaning
-      if (!clean_word.empty()) {
-        bool exists = word_count.find(clean_word) != word_count.end();
-        if (!exists) {
-          word_count.insert(clean_word, 1);
-        } else {
-          word_count[clean_word]++;
-        }
-        total_words++; 
-      }
+    if (!clean_word.empty()) {
+      std::cout << "Found word: " << clean_word << std::endl;
+      word_count[clean_word]++;
+      total_words++;
     }
   }
-
-  word_count.insert("__total_words__", total_words);
+  word_count["__total_words__"] = total_words;
+  std::cout << "Total words: " << total_words << std::endl;
   return word_count;
 }
+
 void Indexer::index_directory() {
   ArrayList<std::thread> threads;
 

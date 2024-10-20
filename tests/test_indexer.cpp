@@ -6,10 +6,11 @@
 #include <gtest/gtest.h>
 
 // NOTE: Helper function to create a temporary file
-void create_temp_file(const std::string &directory,
-                      const std::string &file_name,
-                      const std::string &content) {
-  std::ofstream file(std::filesystem::path(directory) / file_name);
+void create_temp_file(const std::string &dir, const std::string &filename, const std::string &content) {
+  std::ofstream file(dir + "/" + filename);
+  if (!file.is_open()) {
+    throw std::runtime_error("Could not create temporary file");
+  }
   file << content;
   file.close();
 }
