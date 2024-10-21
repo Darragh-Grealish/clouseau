@@ -2,9 +2,8 @@
 #include "cli.h"
 #include "hashmap.hpp"
 #include "indexer.h"
-
 #include <iostream>
-#include <set>
+#include "set.hpp"
 #include <algorithm>
 #include <sstream>
 
@@ -26,30 +25,25 @@ void search_handler(ArrayList<std::string> args) {
     Indexer indexer(args[1]);
     indexer.deserialize_index();
 
-    // Start user input loop
     while (true) {
         std::string query;
         std::cout << "==============================================" << std::endl;
         std::cout << "Enter a search query (or 'exit' to quit): ";
         std::getline(std::cin, query);
 
-        // Exit the loop if the user types 'exit'
         if (query == "exit") {
             break;
         }
 
-        // Transform the query to lowercase and clean the input
         std::transform(query.begin(), query.end(), query.begin(), ::tolower);
         query.erase(std::remove_if(query.begin(), query.end(),
             [](unsigned char c) { return !std::isalnum(c) && c != ' ' && c != '&' && c != '|' && c != '!'; }), query.end());
 
-        // Handle an empty query
         if (query.empty()) {
             std::cout << "No valid input provided." << std::endl;
             continue;
         }
 
-        // Parse the query, check if it's a single word or an expression
         std::istringstream iss(query);
         std::vector<std::string> tokens;
         std::string token;
@@ -57,8 +51,7 @@ void search_handler(ArrayList<std::string> args) {
             tokens.push_back(token);
         }
 
-        // Declare result_set to store the final result
-        std::set<std::string> result_set;
+        Set<std::string> result_set;
         bool and_op = false, or_op = false, not_op = false;
 
         for (const std::string& term : tokens) {
@@ -73,32 +66,26 @@ void search_handler(ArrayList<std::string> args) {
                 continue;
             }
 
-            // Handle actual word search logic
             if (indexer.index.find(term) != indexer.index.end()) {
                 Frequency freq = indexer.index[term];
-                std::set<std::string> term_set;
+                Set<std::string> term_set;
 
-                // Collect files for this term
                 for (const auto& file_freq : freq.files) {
                     term_set.insert(file_freq.file);
                 }
 
                 if (not_op) {
-                    // Remove terms from result_set for "NOT"
                     for (const auto& file : term_set) {
                         result_set.erase(file);
                     }
                     not_op = false;
-                } else if (and_op) {
-                    // Intersection of result_set and term_set for "AND"
-                    std::set<std::string> intersection;
-                    std::set_intersection(result_set.begin(), result_set.end(),
-                                          term_set.begin(), term_set.end(),
-                                          std::inserter(intersection, intersection.begin()));
-                    result_set = intersection;
-                    and_op = false;
+
+
+                }else if (and_op) {
+                  result_set = result_set.intersect(term_set);
+                  and_op = false;
+
                 } else if (or_op || result_set.empty()) {
-                    // Union of result_set and term_set for "OR"
                     result_set.insert(term_set.begin(), term_set.end());
                     or_op = false;
                 }
@@ -107,7 +94,6 @@ void search_handler(ArrayList<std::string> args) {
             }
         }
 
-        // Display the final set of results
         if (!result_set.empty()) {
             std::cout << "Files matching the query: " << std::endl;
             for (const std::string& file : result_set) {
@@ -118,8 +104,6 @@ void search_handler(ArrayList<std::string> args) {
         }
     }
 }
-
-
 
 void index_handler(ArrayList<std::string> args) {
   if (args.size() != 2) {
