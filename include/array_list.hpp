@@ -48,8 +48,8 @@ public:
   size_t capacity() const;
   bool empty() const;
   void clear();
-  Iterator begin() { return Iterator(data_); }
-  Iterator end() { return Iterator(data_ + size_); }
+  Iterator begin() const { return Iterator(data_); }
+  Iterator end() const { return Iterator(data_ + size_); }
 
 private:
   T *data_;

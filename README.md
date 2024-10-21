@@ -36,7 +36,7 @@ make test
 
 # Run
 ./clouseau index ../archive
-./clouseau search ../archive/index.csv
+./clouseau search ../archive
 
 ```
 
