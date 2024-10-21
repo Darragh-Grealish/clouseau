@@ -92,7 +92,7 @@ void search_handler(ArrayList<std::string> args) {
         }
 
         if (!result_set.empty()) {
-            std::unordered_map<std::string, double> relevance_scores;
+            HashMap<std::string, double> relevance_scores;
 
             for (const auto& file : result_set) {
                 for (const auto& entry : indexer.index) {
@@ -106,7 +106,12 @@ void search_handler(ArrayList<std::string> args) {
                 }
             }
 
-            std::vector<std::pair<std::string, double>> sortedResults(relevance_scores.begin(), relevance_scores.end());
+            std::vector<std::pair<std::string, double>> sortedResults;
+            for (auto it = relevance_scores.begin(); it != relevance_scores.end(); ++it) {
+                auto& node = *it; 
+                sortedResults.push_back(std::make_pair(node.key, node.value));
+            }
+            
             std::sort(sortedResults.begin(), sortedResults.end(),
                       [](const auto& a, const auto& b) { return a.second > b.second; });
 
