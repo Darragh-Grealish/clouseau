@@ -22,6 +22,7 @@ class Indexer {
 public:
   Indexer(const std::string &directory);
 
+  HashMap<std::string, Frequency> index;
   // NOTE: Indexes all files in the directory and serializes the index
   void index_directory();
 
@@ -38,7 +39,6 @@ public:
   HashMap<std::string, Frequency> get_index();
 
 private:
-  HashMap<std::string, Frequency> index;
   std::string directory;
   std::string indexFile;
   ArrayList<std::string> files;

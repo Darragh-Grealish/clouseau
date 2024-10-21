@@ -2,8 +2,10 @@
 #include "cli.h"
 #include "hashmap.hpp"
 #include "indexer.h"
-
 #include <iostream>
+#include "set.hpp"
+#include <algorithm>
+#include <sstream>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -11,68 +13,96 @@
 #include <libgen.h>
 #endif
 
+
 void search_handler(ArrayList<std::string> args) {
-  if (args.size() != 2) {
-    std::cerr << "Usage: search <index name>" << std::endl;
-    return;
-  }
+    if (args.size() != 2) {
+        std::cerr << "Usage: search <index name>" << std::endl;
+        return;
+    }
 
-  std::cout << "Searching: " << args[1] << std::endl;
+    std::cout << "Searching: " << args[1] << std::endl;
 
-  Indexer indexer(args[1]);
-  indexer.deserialize_index();
-  HashMap<std::string, Frequency> index = indexer.get_index();
+    Indexer indexer(args[1]);
+    indexer.deserialize_index();
 
-  //     while (true) {
-  //         std::string prefix;
-  //         std::cout << "Enter a prefix to search: ";
-  //         std::cin >> prefix;
-  //
-  //         ArrayList<std::string> results = trie.search(prefix);
-  //
-  //         if (results.size() == 0) {
-  //             std::cout << "No results found." << std::endl;
-  //         } else {
-  //             int result_count = results.size();
-  //             int display_count = 0;
-  //
-  //             while (result_count > 0) {
-  //                 std::cout << "\nSearch Results:" << std::endl;
-  //                 for (int i = 0; i < 10 && i < result_count; i++) {
-  //                     std::string file_path = dirPath + "/" +
-  //                     results[display_count]; std::string title =
-  //                     results[display_count];
-  //
-  //                     std::cout << "Title: " << title << std::endl;
-  //                     std::cout << "File Path: " << file_path << std::endl;
-  //                     std::cout << std::endl;
-  //
-  //                     display_count++;
-  //                 }
-  //
-  //                 result_count -= 10;
-  //
-  //                 if (result_count > 0) {
-  //                     std::cout << "Press [Enter] to display the next 10
-  //                     results, or type 'quit' to exit: "; std::string
-  //                     response; std::cin.ignore(); std::getline(std::cin,
-  //                     response);
-  //
-  //                     if (response == "quit") {
-  //                         return;
-  //                     } else if (response.empty()) {
-  //                         continue;
-  //                     } else {
-  //                         std::cout << "Invalid input. Please press [Enter]
-  //                         or type 'quit'." << std::endl; continue;
-  //                     }
-  //                 } else {
-  //                     std::cout << "No more entries found. Please search for
-  //                     a new word." << std::endl; break;
-  //                 }
-  //             }
-  //         }
-  //     }
+    while (true) {
+        std::string query;
+        std::cout << "==============================================" << std::endl;
+        std::cout << "Enter a search query (or 'exit' to quit): ";
+        std::getline(std::cin, query);
+
+        if (query == "exit") {
+            break;
+        }
+
+        std::transform(query.begin(), query.end(), query.begin(), ::tolower);
+        query.erase(std::remove_if(query.begin(), query.end(),
+            [](unsigned char c) { return !std::isalnum(c) && c != ' ' && c != '&' && c != '|' && c != '!'; }), query.end());
+
+        if (query.empty()) {
+            std::cout << "No valid input provided." << std::endl;
+            continue;
+        }
+
+        std::istringstream iss(query);
+        std::vector<std::string> tokens;
+        std::string token;
+        while (iss >> token) {
+            tokens.push_back(token);
+        }
+
+        Set<std::string> result_set;
+        bool and_op = false, or_op = false, not_op = false;
+
+        for (const std::string& term : tokens) {
+            if (term == "and") {
+                and_op = true;
+                continue;
+            } else if (term == "or") {
+                or_op = true;
+                continue;
+            } else if (term == "not") {
+                not_op = true;
+                continue;
+            }
+
+            if (indexer.index.find(term) != indexer.index.end()) {
+                Frequency freq = indexer.index[term];
+                Set<std::string> term_set;
+
+                for (const auto& file_freq : freq.files) {
+                    term_set.insert(file_freq.file);
+                }
+
+                if (not_op) {
+                    for (const auto& file : term_set) {
+                        result_set.erase(file);
+                    }
+                    not_op = false;
+
+
+                }else if (and_op) {
+                  result_set = result_set.intersect(term_set);
+                  and_op = false;
+
+                } else if (or_op || result_set.empty()) {
+                    result_set.insert(term_set.begin(), term_set.end());
+                    or_op = false;
+                }
+            } else {
+                std::cout << "Word '" << term << "' not found in the index." << std::endl;
+            }
+        }
+
+        if (!result_set.empty()) {
+            std::cout << "Files matching the query: " << std::endl;
+            for (const std::string& file : result_set) {
+                std::cout << file << std::endl;
+            }
+        } else {
+            std::cout << "No results matching the query." << std::endl;
+        }
+    }
 }
 
 void index_handler(ArrayList<std::string> args) {

@@ -41,7 +41,6 @@ HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
         clean_word += std::tolower(c, std::locale());
       } else {
         if (!clean_word.empty()) {
-          std::cout << "Found word: " << clean_word << std::endl;
           word_count[clean_word]++;
           total_words++;
           clean_word.clear();
@@ -53,7 +52,6 @@ HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
                      clean_word.end());
 
     if (!clean_word.empty()) {
-      std::cout << "Found word: " << clean_word << std::endl;
       word_count[clean_word]++;
       total_words++;
     }
@@ -144,7 +142,11 @@ void Indexer::serialize_index() {
   std::cout << "Index written to " << indexFile << std::endl;
 }
 
-HashMap<std::string, Frequency> Indexer::get_index() { return index; }
+HashMap<std::string, Frequency> Indexer::get_index() { 
+  // NOTE: return index does not work and causes a segfault
+
+  return this->index;
+}
 
 void Indexer::deserialize_index() {
   std::ifstream index_file(directory + "/" + indexFile);
