@@ -21,7 +21,8 @@ void search_handler(ArrayList<std::string> args) {
 
   Indexer indexer(args[1]);
   indexer.deserialize_index();
-  HashMap<std::string, Frequency> index = indexer.get_index();
+ 
+  std::cout << indexer.index.size() << " words indexed" << std::endl;
 
 }
 
