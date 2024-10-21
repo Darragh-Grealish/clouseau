@@ -13,7 +13,6 @@
 #include <libgen.h>
 #endif
 
-
 void search_handler(ArrayList<std::string> args) {
     if (args.size() != 2) {
         std::cerr << "Usage: search <index name>" << std::endl;
@@ -108,10 +107,10 @@ void search_handler(ArrayList<std::string> args) {
 
             std::vector<std::pair<std::string, double>> sortedResults;
             for (auto it = relevance_scores.begin(); it != relevance_scores.end(); ++it) {
-                auto& node = *it; 
+                auto& node = *it;
                 sortedResults.push_back(std::make_pair(node.key, node.value));
             }
-            
+
             std::sort(sortedResults.begin(), sortedResults.end(),
                       [](const auto& a, const auto& b) { return a.second > b.second; });
 
@@ -162,21 +161,21 @@ void search_handler(ArrayList<std::string> args) {
 }
 
 void index_handler(ArrayList<std::string> args) {
-  if (args.size() != 2) {
-    std::cerr << "Usage: index <input directory>" << std::endl;
-    return;
-  }
+    if (args.size() != 2) {
+        std::cerr << "Usage: index <input directory>" << std::endl;
+        return;
+    }
 
-  Indexer indexer(args[1]);
-  indexer.index_directory();
-  indexer.serialize_index();
+    Indexer indexer(args[1]);
+    indexer.index_directory();
+    indexer.serialize_index();
 }
 
-int main(int argc, char *argv[]) {
-  CLI cli("clouseau", argc, argv);
-  cli.add_cmd("search", Cmd{"Search for a file", search_handler});
-  cli.add_cmd("index", Cmd{"Index a directory", index_handler});
-  cli.run();
+int main(int argc, char* argv[]) {
+    CLI cli("clouseau", argc, argv);
+    cli.add_cmd("search", Cmd{"Search for a file", search_handler});
+    cli.add_cmd("index", Cmd{"Index a directory", index_handler});
+    cli.run();
 
-  return 0;
+    return 0;
 }
