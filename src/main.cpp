@@ -23,56 +23,6 @@ void search_handler(ArrayList<std::string> args) {
   indexer.deserialize_index();
   HashMap<std::string, Frequency> index = indexer.get_index();
 
-  //     while (true) {
-  //         std::string prefix;
-  //         std::cout << "Enter a prefix to search: ";
-  //         std::cin >> prefix;
-  //
-  //         ArrayList<std::string> results = trie.search(prefix);
-  //
-  //         if (results.size() == 0) {
-  //             std::cout << "No results found." << std::endl;
-  //         } else {
-  //             int result_count = results.size();
-  //             int display_count = 0;
-  //
-  //             while (result_count > 0) {
-  //                 std::cout << "\nSearch Results:" << std::endl;
-  //                 for (int i = 0; i < 10 && i < result_count; i++) {
-  //                     std::string file_path = dirPath + "/" +
-  //                     results[display_count]; std::string title =
-  //                     results[display_count];
-  //
-  //                     std::cout << "Title: " << title << std::endl;
-  //                     std::cout << "File Path: " << file_path << std::endl;
-  //                     std::cout << std::endl;
-  //
-  //                     display_count++;
-  //                 }
-  //
-  //                 result_count -= 10;
-  //
-  //                 if (result_count > 0) {
-  //                     std::cout << "Press [Enter] to display the next 10
-  //                     results, or type 'quit' to exit: "; std::string
-  //                     response; std::cin.ignore(); std::getline(std::cin,
-  //                     response);
-  //
-  //                     if (response == "quit") {
-  //                         return;
-  //                     } else if (response.empty()) {
-  //                         continue;
-  //                     } else {
-  //                         std::cout << "Invalid input. Please press [Enter]
-  //                         or type 'quit'." << std::endl; continue;
-  //                     }
-  //                 } else {
-  //                     std::cout << "No more entries found. Please search for
-  //                     a new word." << std::endl; break;
-  //                 }
-  //             }
-  //         }
-  //     }
 }
 
 void index_handler(ArrayList<std::string> args) {

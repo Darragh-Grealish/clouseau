@@ -41,7 +41,6 @@ HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
         clean_word += std::tolower(c, std::locale());
       } else {
         if (!clean_word.empty()) {
-          std::cout << "Found word: " << clean_word << std::endl;
           word_count[clean_word]++;
           total_words++;
           clean_word.clear();
@@ -53,7 +52,6 @@ HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
                      clean_word.end());
 
     if (!clean_word.empty()) {
-      std::cout << "Found word: " << clean_word << std::endl;
       word_count[clean_word]++;
       total_words++;
     }
