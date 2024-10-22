@@ -10,9 +10,14 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <sys/unistd.h>
 #include <thread>
-#include <unistd.h>
+
+#ifdef _WIN32
+    #include <direct.h>
+#else
+    #include <sys/unistd.h>
+    #include <unistd.h>
+#endif
 
 Indexer::Indexer(const std::string &directory) {
   this->directory = directory;
@@ -252,7 +257,8 @@ void Indexer::serialize_index() {
     }
   }
 
-  std::cout << std::endl << "Index saved to " << directory + "/" + indexFile << std::endl;
+  std::cout << std::endl
+            << "Index saved to " << directory + "/" + indexFile << std::endl;
 }
 
 void Indexer::deserialize_index() {
