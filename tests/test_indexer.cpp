@@ -40,7 +40,7 @@ TEST(IndexerTest, FileWordCount) {
   create_temp_file(temp_dir, "file1.txt", "hello world hello");
 
   Indexer indexer(temp_dir);
-  HashMap<std::string, int> word_count = indexer.file_word_count("file1.txt");
+  HashMap<std::string, int> word_count = indexer.file_word_count(std::filesystem::path("file1.txt").filename().string());
 
   EXPECT_EQ(word_count["hello"], 2);
   EXPECT_EQ(word_count["world"], 1);

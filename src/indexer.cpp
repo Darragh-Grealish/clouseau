@@ -48,13 +48,12 @@ HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
 
   std::locale loc;
   std::regex word_regex(
-      R"([a-zA-Z0-9]+(?:['-][a-zA-Z0-9]+)*)"); // Regex to capture words,
-                                               // including apostrophes/hyphens
+      R"([a-zA-Z0-9]+(?:['-][a-zA-Z0-9]+)*)"); // capture words including
+                                               // apostrophes/hyphens
 
   while (std::getline(input, line)) {
-    std::transform(line.begin(), line.end(), line.begin(), [&](char c) {
-      return std::tolower(c, loc); // Convert entire line to lowercase
-    });
+    std::transform(line.begin(), line.end(), line.begin(),
+                   [&](char c) { return std::tolower(c, loc); });
 
     auto words_begin =
         std::sregex_iterator(line.begin(), line.end(), word_regex);
@@ -72,71 +71,61 @@ HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
   }
 
   word_count["__total_words__"] = total_words;
-  // std::cout << "Total words: " << total_words << std::endl;
   return word_count;
 }
+void Indexer::index_selection(const ArrayList<std::string> &files) {
+  for (const std::string &file : files) {
+    HashMap<std::string, int> word_count = file_word_count(file);
+    int total_words = word_count["__total_words__"];
+    word_count.erase("__total_words__");
 
-void Indexer::index_directory() {
-  ArrayList<std::thread> threads;
-
-  auto worker = [this](ArrayList<std::string> files) {
-    for (const std::string &file : files) {
-      HashMap<std::string, int> word_count = file_word_count(file);
-      int total_words = word_count["__total_words__"];
-      word_count.erase("__total_words__");
-
-      std::lock_guard<std::mutex> lock(index_mutex);
-      for (auto const &pair : word_count) {
-        if (index.find(pair.key) == index.end()) {
-          Frequency freq;
-          freq.total = pair.value;
-          FileFrequency file_freq;
-          file_freq.file = file;
-          file_freq.count = pair.value;
-          file_freq.tf = pair.value / (double)total_words;
-          freq.files.push_back(file_freq);
-          index[pair.key] = freq;
-        } else {
-          index[pair.key].total += pair.value;
-          FileFrequency file_freq;
-          file_freq.file = file;
-          file_freq.count = pair.value;
-          file_freq.tf = pair.value / (double)total_words;
-          index[pair.key].files.push_back(file_freq);
-        }
-      }
-
-      for (auto &pair : index) {
-        pair.value.idf = std::log(files.size() / pair.value.files.size());
-        if (pair.value.idf == -INFINITY) {
-          pair.value.idf = 0;
-        }
+    std::lock_guard<std::mutex> lock(index_mutex);
+    for (auto const &pair : word_count) {
+      if (index.find(pair.key) == index.end()) {
+        Frequency freq;
+        freq.total = pair.value;
+        FileFrequency file_freq{file, pair.value,
+                                pair.value / (double)total_words};
+        freq.files.push_back(file_freq);
+        index[pair.key] = freq;
+      } else {
+        index[pair.key].total += pair.value;
+        FileFrequency file_freq{file, pair.value,
+                                pair.value / (double)total_words};
+        index[pair.key].files.push_back(file_freq);
       }
     }
-  };
 
-  int num_threads = std::thread::hardware_concurrency();
-  if (num_threads == 0)
-    num_threads = 1;
-
-  int files_per_thread = files.size() / num_threads;
-  std::cout << "Indexing " << files_per_thread << " files per thread ("
-            << num_threads << " threads)" << std::endl;
-
-  for (int i = 0; i < num_threads; i++) {
-    ArrayList<std::string> thread_files;
-    for (int j = i * files_per_thread;
-         j < (i + 1) * files_per_thread && j < files.size(); j++) {
-      thread_files.push_back(files[j]);
+    for (auto &pair : index) {
+      pair.value.idf = std::log(files.size() / pair.value.files.size());
+      if (pair.value.idf == -INFINITY) {
+        pair.value.idf = 0;
+      }
     }
-    threads.push_back(std::thread(worker, thread_files));
-  }
-
-  for (std::thread &thread : threads) {
-    thread.join();
   }
 }
-void Indexer::serialize_index() {
+void Indexer::index_directory() {
+        ArrayList<std::thread> threads;
+        int num_threads = std::thread::hardware_concurrency();
+        if (num_threads == 0) num_threads = 1;
+        
+        int files_per_thread = files.size() / num_threads;
+        std::cout << "Indexing " << files_per_thread << " files per thread ("
+                 << num_threads << " threads)" << std::endl;
+        
+        for (int i = 0; i < num_threads; i++) {
+            ArrayList<std::string> thread_files;
+            for (int j = i * files_per_thread;
+                 j < (i + 1) * files_per_thread && j < files.size(); j++) {
+                thread_files.push_back(files[j]);
+            }
+            threads.push_back(std::thread(&Indexer::index_selection, this, thread_files));
+        }
+        
+        for (std::thread& thread : threads) {
+            thread.join();
+        }
+    }void Indexer::serialize_index() {
   std::ofstream index_file(directory + "/" + indexFile, std::ios::binary);
   if (!index_file.is_open()) {
     throw std::runtime_error("Unable to open index file for writing");

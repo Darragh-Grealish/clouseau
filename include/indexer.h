@@ -43,4 +43,6 @@ private:
                                       "as",  "by",  "at",   "an",   "be"};
 
   ArrayList<std::string> get_directory_files();
+  void index_selection(const ArrayList<std::string>& files);
+  
 };
