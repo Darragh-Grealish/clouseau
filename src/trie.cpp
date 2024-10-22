@@ -16,7 +16,7 @@ ArrayList<std::string> Trie::search(const std::string &prefix) {
   TrieNode *current = root;
   for (char c : prefix) {
     if (current->children.find(c) == current->children.end()) {
-      std::cout << "No keywords found for the given prefix." << std::endl;
+      // std::cout << "keywords not found" << std::endl;
       return ArrayList<std::string>();
     }
     current = current->children[c];
