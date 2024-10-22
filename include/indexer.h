@@ -44,7 +44,7 @@ private:
   // INFO: Ignore counting these
   const Set<std::string> stopwords = {"the", "and", "is",   "in",   "it",  "of",
                                       "to",  "a",   "that", "with", "for", "on",
-                                      "as",  "by",  "at",   "an",   "be"};
+                                      "as",  "by",  "at",   "an",   "be", "or", "not"};
 
   // INFO: Walk through the directory and get all files
   ArrayList<std::string> get_directory_files();
