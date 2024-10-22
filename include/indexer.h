@@ -41,7 +41,6 @@ public:
   // NOTE: Returns the index
   HashMap<std::string, Frequency> get_index();
 
-  Trie *trie;
   HashMap<std::string, Frequency> index;
 
 private:

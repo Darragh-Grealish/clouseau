@@ -4,9 +4,6 @@
 #include "indexer.h"
 
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -99,7 +96,7 @@ void autocomplete_handler(ArrayList<std::string> args) {
 
   Trie trie;
   Indexer indexer(args[1]);
-  indexer.deserialize_index_trie(trie); // Make the them the same and the operators will distinguish them
+  indexer.deserialize_index_trie(trie);
 
   while (true) {
     std::string prefix;
@@ -110,7 +107,7 @@ void autocomplete_handler(ArrayList<std::string> args) {
       break;
     }
 
-    ArrayList<std::string> results = trie.autocomplete(prefix);
+    ArrayList<std::string> results = trie.search(prefix);
 
     std::cout << "Results size: " << results.size() << std::endl;
 
@@ -123,8 +120,7 @@ void autocomplete_handler(ArrayList<std::string> args) {
       while (result_count > 0) {
         for (int i = 0; i < 10 && i < result_count; i++) {
           std::string word = results[display_count];
-          ArrayList<std::string> files = trie.search(word);
-          
+
           std::cout << "Word: " << word << std::endl;
           display_count++;
         }
@@ -145,6 +141,7 @@ void autocomplete_handler(ArrayList<std::string> args) {
             }
           }
         }
+
       }
     }
   } 

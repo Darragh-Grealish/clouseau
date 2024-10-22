@@ -1,7 +1,7 @@
 #include "trie.hpp"
 #include <iostream>
 
-void Trie::insert(const std::string &word, const ArrayList<std::string> &files) {
+void Trie::insert(const std::string &word) {
   TrieNode *current = root;
   for (char c : word) {
     if (current->children.find(c) == current->children.end()) {
@@ -10,24 +10,9 @@ void Trie::insert(const std::string &word, const ArrayList<std::string> &files) 
     current = current->children[c];
   }
   current->is_end_of_word = true;
-  current->files = files;
 }
 
 ArrayList<std::string> Trie::search(const std::string &prefix) {
-  TrieNode *current = root;
-  for (char c : prefix) {
-    if (current->children.find(c) == current->children.end()) {
-      return ArrayList<std::string>();
-    }
-    current = current->children[c];
-  }
-
-  ArrayList<std::string> results;
-  collect_all_words(current, prefix, results); // keep compiler happy
-  return results;
-}
-
-ArrayList<std::string> Trie::autocomplete(const std::string &prefix) {
   TrieNode *current = root;
   for (char c : prefix) {
     if (current->children.find(c) == current->children.end()) {

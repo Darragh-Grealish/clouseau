@@ -1,7 +1,6 @@
 #include "indexer.h"
 #include "array_list.hpp"
 #include "hashmap.hpp"
-#include "trie.hpp"
 
 #include <cctype>
 #include <cmath>
@@ -14,7 +13,7 @@
 #include <string>
 #include <thread>
 
-Indexer::Indexer(const std::string &directory) : trie(new Trie()), directory(directory) { 
+Indexer::Indexer(const std::string &directory) {
   this->directory = directory;
   this->indexFile = "clouseau.csv";
 
@@ -245,7 +244,7 @@ void Indexer::deserialize_index_trie(Trie &trie) {
     for (auto const &file : freq.files) {
       files.push_back(file.file);
     }
-    trie.insert(word, files); // insert into trie
+    trie.insert(word); // insert into trie
   }
 
   index_file.close();
