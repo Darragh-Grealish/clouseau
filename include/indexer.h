@@ -2,6 +2,7 @@
 
 #include "array_list.hpp"
 #include "hashmap.hpp"
+#include "set.hpp"
 
 #include <mutex>
 #include <string>
@@ -35,4 +36,7 @@ private:
   std::string indexFile;
   ArrayList<std::string> files;
   std::mutex index_mutex;
+  const Set<std::string> stopwords = {"the", "and", "is",   "in",   "it",  "of",
+                                      "to",  "a",   "that", "with", "for", "on",
+                                      "as",  "by",  "at",   "an",   "be"};
 };
