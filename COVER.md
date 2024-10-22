@@ -97,7 +97,7 @@ We incorporated the GoogleTest framework for streamlined and efficient managemen
 
 7. HashMap:
 
-Used bucket chaining for collision resolution, with lazy deletion and rehashing when the load factor exceeds 0.75.
+Used bucket chaining for collision resolution, with lazy deletion and rehashing when the load factor exceeds 0.7.
 Used [djb2](http://www.cse.yorku.ca/~oz/hash.html) for the primary hash function.
 
 - Insert Operation: O(1) (average case), O(N) (worst case)  - Quadratic Probing
@@ -110,7 +110,6 @@ Used [djb2](http://www.cse.yorku.ca/~oz/hash.html) for the primary hash function
 
 - Rehash Operation: O(N) (N = number of elements in the map).
 
-7. Autocomplete:
 
 ## References
 
