@@ -36,7 +36,7 @@
 
 - Adam Byrne: additions(4604) deletions(3324)
 - Darragh Grealish: additions(947) deletions(221)
-- Desirèe Charles: additions(978) deletions(306)
+- Desirèe Charles: additions(991) deletions(307)
 
 ## Description 
 
@@ -77,6 +77,18 @@ We incorporated the GoogleTest framework for streamlined and efficient managemen
 The indexing phase runs at O(F * N), while search operations are approximately O(T * L). 
 
 4. ArrayList: Using dynamic allocation, the ArrayList has a complexity of O(1) for insertion and deletion, and O(N) for resizing (doubles). Inserts are worst case O(N) when resizing but amortized O(1) overall. Copy move and assignment operations are O(N).
+
+5. Set: 
+
+- Insert Operation: O(N) (N = number of elements in the set).
+
+- Contains Operation: O(N) (N = number of elements in the set).
+
+- Erase Operation: O(N) (N = number of elements in the set).
+
+- Intersect Operation: O(N * M) (N = number of elements in the current set, M = number of elements in the other set).
+
+- Resize Operation: O(N) (N = number of elements in the set).
 
 ## References
 
