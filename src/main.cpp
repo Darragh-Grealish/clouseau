@@ -171,11 +171,74 @@ void index_handler(ArrayList<std::string> args) {
     indexer.serialize_index();
 }
 
-int main(int argc, char* argv[]) {
-    CLI cli("clouseau", argc, argv);
-    cli.add_cmd("search", Cmd{"Search for a file", search_handler});
-    cli.add_cmd("index", Cmd{"Index a directory", index_handler});
-    cli.run();
+
+void autocomplete_handler(ArrayList<std::string> args) {
+  if (args.size() != 2) {
+    std::cerr << "Usage: autocomplete <index name>" << std::endl;
+    return;
+  }
+
+  std::cout << "Autocompleting: " << args[1] << std::endl;
+
+  Trie trie;
+  Indexer indexer(args[1]);
+  indexer.deserialize_index(trie);
+
+  while (true) {
+    std::string prefix;
+    std::cout << "(Main Menu) Enter a prefix to autocomplete (or 'q' to exit): ";
+    std::cin >> prefix;
+
+    if (prefix == "q") {
+      break;
+    }
+
+    ArrayList<std::string> results = trie.search(prefix);
+
+    std::cout << "Results size: " << results.size() << std::endl;
+
+    if (results.size() == 0) {
+      std::cout << "No results found." << std::endl;
+    } else {
+      int result_count = results.size();
+      int display_count = 0;
+
+      while (result_count > 0) {
+        for (int i = 0; i < 10 && i < result_count; i++) {
+          std::string word = results[display_count];
+
+          std::cout << "Word: " << word << std::endl;
+          display_count++;
+        }
+
+        result_count -= 10;
+
+        if (result_count > 0) {
+          while (prefix != "d" || prefix != "r") {
+            std::cout << "Type 'd' to display the next 10 results, or type 'r' to return to (Main Menu): "; 
+            std::cin >> prefix;
+            if (prefix == "d") {
+              break;
+            } else if (prefix == "r") {
+              result_count = 0;
+              break;
+            } else {
+              std::cout << "Invalid input." << std::endl;
+            }
+          }
+        }
+
+      }
+    }
+  } 
+}
+
+int main(int argc, char *argv[]) {
+  CLI cli("clouseau", argc, argv);
+  cli.add_cmd("search", Cmd{"Search for a file", search_handler});
+  cli.add_cmd("index", Cmd{"Index a directory", index_handler});
+  cli.add_cmd("autocomplete", Cmd{"Autocomplete a word", autocomplete_handler});
+  cli.run();
 
     return 0;
 }

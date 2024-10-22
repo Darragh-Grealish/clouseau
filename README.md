@@ -36,7 +36,7 @@ make test
 
 # Run
 ./clouseau index ../archive
-./clouseau search ../archive
-
+./clouseau search ../archive/
+./clouseau autocomplete ../archive/
 ```
 
