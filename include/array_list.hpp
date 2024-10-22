@@ -10,13 +10,16 @@ public:
   class Iterator {
   public:
     Iterator(T *ptr) : ptr_(ptr) {}
+
+    // NOTE: Prefix increment
     Iterator operator++() {
       ++ptr_;
       return *this;
-    } // NOTE: Prefix increment
-    bool operator!=(const Iterator &other) const {
-      return ptr_ != other.ptr_;
-    } // NOTE: Inequality
+    }
+
+    // NOTE: Inequality (end iterator is one past the last element)
+    bool operator!=(const Iterator &other) const { return ptr_ != other.ptr_; }
+
     T &operator*() const { return *ptr_; } // NOTE: Dereference
 
   private:
@@ -24,7 +27,11 @@ public:
   };
 
   ArrayList();
+
+  // NOTE: Explicit does not allow implicit conversion
   explicit ArrayList(size_t capacity);
+
+  // NOTE: allows construct with initializer list (e.g. {1, 2, 3})
   ArrayList(std::initializer_list<T> list);
   ~ArrayList();
 

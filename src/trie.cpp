@@ -1,5 +1,4 @@
 #include "trie.hpp"
-#include <iostream>
 
 void Trie::insert(const std::string &word) {
   TrieNode *current = root;
