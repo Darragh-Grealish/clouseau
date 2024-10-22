@@ -5,6 +5,7 @@
 #include "set.hpp"
 #include "trie.hpp"
 
+#include <atomic>
 #include <mutex>
 #include <string>
 
