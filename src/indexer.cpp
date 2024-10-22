@@ -12,19 +12,34 @@
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <sys/unistd.h>
 #include <thread>
+#include <unistd.h>
 
 Indexer::Indexer(const std::string &directory) {
   this->directory = directory;
   this->indexFile = "clouseau.idx";
 
-  if (!std::filesystem::exists(directory)) {
+  if (!std::filesystem::exists(directory)) { // Exists?
     throw std::runtime_error("Directory does not exist");
   }
 
+  if (!std::filesystem::is_directory(directory)) { // A dir?
+    throw std::runtime_error("Path is not a directory");
+  }
+
+  if (access(directory.c_str(), W_OK) == -1) { // Writeable?
+    throw std::runtime_error("Directory is not writable");
+  }
+
   this->files = get_directory_files();
+
+  if(this->files.empty()) { // Empty dir?
+    throw std::runtime_error("No .txt files found in directory");
+  }
 }
 
+// NOTE: Find all txts in the directory
 ArrayList<std::string> Indexer::get_directory_files() {
   ArrayList<std::string> files;
   for (const auto &entry : std::filesystem::directory_iterator(directory)) {
@@ -35,6 +50,7 @@ ArrayList<std::string> Indexer::get_directory_files() {
   return files;
 }
 
+// NOTE: Do word count for one file
 HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
   HashMap<std::string, int> word_count;
   std::ifstream input(directory + "/" + file);
@@ -72,6 +88,8 @@ HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
   word_count["__total_words__"] = total_words;
   return word_count;
 }
+
+// INFO: indexes a list of files (thread worker)
 void Indexer::index_selection(const ArrayList<std::string> &files) {
   for (const std::string &file : files) {
     HashMap<std::string, int> word_count = file_word_count(file);
@@ -103,6 +121,8 @@ void Indexer::index_selection(const ArrayList<std::string> &files) {
     }
   }
 }
+
+// INFO: indexes all files in the directory
 void Indexer::index_directory() {
   ArrayList<std::thread> threads;
   int num_threads = std::thread::hardware_concurrency();
@@ -127,6 +147,8 @@ void Indexer::index_directory() {
     thread.join();
   }
 }
+
+// NOTE: serialize index to file (binary)
 void Indexer::serialize_index() {
   std::ofstream index_file(directory + "/" + indexFile, std::ios::binary);
   if (!index_file.is_open()) {
@@ -210,6 +232,7 @@ void Indexer::deserialize_index() {
   index_file.close();
 }
 
+// INFO: deserialize index to Trie structure for autocomplete
 void Indexer::deserialize_index(Trie &trie) {
   std::ifstream index_file(directory + "/" + indexFile, std::ios::binary);
   if (!index_file.is_open()) {

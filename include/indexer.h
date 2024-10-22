@@ -2,8 +2,8 @@
 
 #include "array_list.hpp"
 #include "hashmap.hpp"
-#include "trie.hpp"
 #include "set.hpp"
+#include "trie.hpp"
 
 #include <mutex>
 #include <string>
@@ -23,13 +23,16 @@ struct Frequency {
 
 class Indexer {
 public:
-  Indexer(const std::string &directory);
+  Indexer(
+      const std::string &directory); // contains checks for dir compatibility
 
-  void index_directory();
-  void serialize_index();
-  void deserialize_index();
-  void deserialize_index( Trie &trie);
-  HashMap<std::string, int> file_word_count(const std::string &file);
+  void index_directory();   // Index all files in the directory
+  void serialize_index();   // Serialize index to file (binary)
+  void deserialize_index(); // Deserialize index to HashMap structure for search
+  void deserialize_index(
+      Trie &trie); // Deserialize index to Trie structure for autocomplete
+  HashMap<std::string, int>
+  file_word_count(const std::string &file); // Count words in a file
 
   HashMap<std::string, Frequency> index;
 
@@ -42,7 +45,8 @@ private:
                                       "to",  "a",   "that", "with", "for", "on",
                                       "as",  "by",  "at",   "an",   "be"};
 
-  ArrayList<std::string> get_directory_files();
-  void index_selection(const ArrayList<std::string>& files);
-  
+  ArrayList<std::string>
+  get_directory_files(); // Walk through directory and get all files
+  void index_selection(const ArrayList<std::string>
+                           &files); // Index a list of files (thread worker)
 };
