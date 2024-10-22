@@ -36,7 +36,7 @@
 
 - Adam Byrne: additions(4604) deletions(3324)
 - Darragh Grealish: additions(947) deletions(221)
-- Desirèe Charles: additions(978) deletions(306)
+- Desirèe Charles: additions(991) deletions(307)
 
 ## Description 
 
