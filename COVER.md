@@ -60,7 +60,7 @@ In terms of testing and data structures, several important design choices were m
 
 - Set: To handle collections of unique elements effectively, we built a custom Set structure. This ensures no duplicates and provides critical features like intersections, insertions, and existence checks, optimizing operations that involve handling unique data sets.
 
-- Trie: For Keyword AutoComplete we built a Trie, allowing us to traverse the tree spelling words using the given prefix. Nodes are a HashMap with a Character & pointer to next node. Nodes can be marked "isEndOfWord". Some nodes are both "isEndOfWord" and have children nodes. insert(word) iterates through the word creating new Nodes for charactrers if they don't exist. search() checks if the prefix exists, then uses collect_all_words() to gather resulting words into an ArrayList.
+- Trie: For Keyword AutoComplete we built a Trie, allowing us to traverse the tree spelling words using the given prefix. Nodes are a HashMap with a Character & pointer to next node. Nodes can be marked "isEndOfWord". Some nodes are both "isEndOfWord" and have children nodes. Complete with insert(word) & search(prefix) functions.
 
 Each of these choices was made to optimize performance, ensure scalability, and improve overall efficiency while staying true to the project’s requirements.
 
@@ -75,17 +75,23 @@ This project implements a text indexing and search engine using a Trie for effic
 
 - Frequency Calculation: Insertion into the index is O(M) per unique word, leading to O(F * M) for all files.
 
-2. Trie Class:
-
-- Insert Operation: O(L) per word (L = length of the word).
-
-- Search Operation: O(L) per prefix.
-
 3. Search Functionality:
 
 - Processing queries has a complexity of O(T * L) (T = number of tokens, L = token length).
 
 The indexing phase runs at O(F * N), while search operations are approximately O(T * L). 
+
+3. AutoComplete Functionality:
+
+- Deserializing & Inserting into Trie O(W * L) (W = Number of words, L = Length of the word).
+
+- Searching the prefix O(L * N) per prefix (L = length of prefix, N = number of nodes in subtree).
+
+4. Trie:
+
+- Insert Operation: O(L) per word (L = length of the word).
+
+- Search Operation: O(L * N) per prefix (L = length of prefix, N = number of nodes in subtree).
 
 ## References
 
