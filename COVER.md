@@ -75,11 +75,11 @@ This project implements a text indexing and search engine using a Trie for effic
 
 - Frequency Calculation: Insertion into the index is O(M) per unique word, leading to O(F * M) for all files.
 
-3. Search Functionality:
+2. Search Functionality:
 
 - Processing queries has a complexity of O(T * L) (T = number of tokens, L = token length).
 
-The indexing phase runs at O(F * N), while search operations are approximately O(T * L). 
+- The indexing phase runs at O(F * N), while search operations are approximately O(T * L). 
 
 3. AutoComplete Functionality:
 
@@ -91,7 +91,17 @@ The indexing phase runs at O(F * N), while search operations are approximately O
 
 - Insert Operation: O(L) per word (L = length of the word).
 
-- Search Operation: O(L * N) per prefix (L = length of prefix, N = number of nodes in subtree).
+- Search Operation: O(L * N * 1) per prefix (L = length of prefix, N = number of nodes in subtree 1 = (amortized) HashMap look up of nodes).
+
+5. HashMap:
+
+- Search O(1) amortized 
+
+- Erase O()
+
+6. Arraylist:
+
+7. Set:
 
 ## References
 
