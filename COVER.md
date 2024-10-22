@@ -60,7 +60,7 @@ In terms of testing and data structures, several important design choices were m
 
 - Set: To handle collections of unique elements effectively, we built a custom Set structure. This ensures no duplicates and provides critical features like intersections, insertions, and existence checks, optimizing operations that involve handling unique data sets.
 
-- Trie: To do the Keyword Autocomplete, we built our own Trie. It stores a character in every node, spelling out different words as we traverse down the tree. Children nodes are a HashMap with a Character & pointer to next node. Nodes can be marked "isEndOfWord". Some nodes are "isEndOfWord" and have children nodes E.g. work, workplace. Letter 'k' can be "isEndOfWord" with a child node 'p'. insert(word) iterates through the word creating new Nodes for charactrers if they don't exist. search() checks if the prefix exists, then uses collect_all_words() to gather resulting words into an ArrayList.
+- Trie: For Keyword AutoComplete we built a Trie, allowing us to traverse the tree spelling words using the given prefix. Nodes are a HashMap with a Character & pointer to next node. Nodes can be marked "isEndOfWord". Some nodes are both "isEndOfWord" and have children nodes. insert(word) iterates through the word creating new Nodes for charactrers if they don't exist. search() checks if the prefix exists, then uses collect_all_words() to gather resulting words into an ArrayList.
 
 Each of these choices was made to optimize performance, ensure scalability, and improve overall efficiency while staying true to the project’s requirements.
 
