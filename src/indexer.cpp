@@ -31,9 +31,11 @@ Indexer::Indexer(const std::string &directory) {
     throw std::runtime_error("Path is not a directory");
   }
 
+#ifndef _WIN32
   if (access(directory.c_str(), W_OK) == -1) { // Writeable?
     throw std::runtime_error("Directory is not writable");
   }
+#endif
 
   this->files = get_directory_files();
 
