@@ -197,7 +197,7 @@ void Indexer::deserialize_index() {
 }
 
 
-void Indexer::deserialize_index_trie(Trie &trie) {
+void Indexer::deserialize_index(Trie &trie) {
   std::ifstream index_file(directory + "/" + indexFile);
   if (!index_file.is_open()) {
     throw std::runtime_error("Unable to open index file for reading");

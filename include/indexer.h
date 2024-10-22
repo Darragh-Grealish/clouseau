@@ -33,7 +33,7 @@ public:
   void deserialize_index();
 
   // NOTE: Deserializes the index from a file (clouseau.csv) and populates the trie
-  void deserialize_index_trie( Trie &trie);
+  void deserialize_index( Trie &trie);
 
   // NOTE: Returns a map of words to their frequency
   HashMap<std::string, int> file_word_count(const std::string &file);
