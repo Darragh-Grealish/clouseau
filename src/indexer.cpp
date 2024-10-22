@@ -142,12 +142,6 @@ void Indexer::serialize_index() {
   std::cout << "Index written to " << indexFile << std::endl;
 }
 
-HashMap<std::string, Frequency> Indexer::get_index() { 
-  // NOTE: return index does not work and causes a segfault
-
-  return this->index;
-}
-
 void Indexer::deserialize_index() {
   std::ifstream index_file(directory + "/" + indexFile);
   if (!index_file.is_open()) {
