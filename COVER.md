@@ -49,8 +49,7 @@ In terms of testing and data structures, several important design choices were m
 - ArrayList: Instead of using the standard std::vector, we developed a custom ArrayList, which resizes by doubling the array size when full. This gave us more control over memory management.
 - HashMap: Our custom HashMap was built using open addressing with double hashing for collision resolution, along with lazy deletion. The array automatically rehashes and doubles in size when the load factor exceeds 0.75, improving performance during high-volume operations.
 - Set: To handle collections of unique elements effectively, we built a custom Set structure. This ensures no duplicates and provides critical features like intersections, insertions, and existence checks, optimizing operations that involve handling unique data sets.
-- Trie: To handle 
-
+- Trie: For Keyword AutoComplete we built a Trie, allowing us to traverse the tree spelling words using the given prefix. Nodes are a HashMap with a Character & pointer to next node. Nodes can be marked "isEndOfWord". Some nodes are both "isEndOfWord" and have children nodes. Complete with insert(word) & search(prefix) functions.
 
 We incorporated the GoogleTest framework for streamlined and efficient management of unit tests which are orchestrated on GitHub Actions. The tests cover the ArrayList, HashMap, and Trie data structures, ensuring the reliability and robustness of our codebase (alongside CLI and Indexer tests).
 
@@ -64,21 +63,27 @@ We incorporated the GoogleTest framework for streamlined and efficient managemen
 
 - Frequency Calculation: Insertion into the index is O(M) per unique word, leading to O(F * M) for all files.
 
-2. Trie Class:
-
-- Insert Operation: O(L) per word (L = length of the word).
-
-- Search Operation: O(L) per prefix.
-
-3. Search Functionality:
+2. Search Functionality:
 
 - Processing queries has a complexity of O(T * L) (T = number of tokens, L = token length).
 
-The indexing phase runs at O(F * N), while search operations are approximately O(T * L). 
+- The indexing phase runs at O(F * N), while search operations are approximately O(T * L). 
 
-4. ArrayList: Using dynamic allocation, the ArrayList has a complexity of O(1) for insertion and deletion, and O(N) for resizing (doubles). Inserts are worst case O(N) when resizing but amortized O(1) overall. Copy move and assignment operations are O(N).
+3. AutoComplete Functionality:
 
-5. Set: 
+- Deserializing & Inserting into Trie O(W * L) (W = Number of words, L = Length of the word).
+
+- Searching the prefix O(L * N) per prefix (L = length of prefix, N = number of nodes in subtree).
+
+4. Trie:
+
+- Insert Operation: O(L) per word (L = length of the word).
+
+- Search Operation: O(L * N * 1) per prefix (L = length of prefix, N = number of nodes in subtree 1 = (amortized) HashMap look up of nodes).
+
+5. ArrayList: Using dynamic allocation, the ArrayList has a complexity of O(1) for insertion and deletion, and O(N) for resizing (doubles). Inserts are worst case O(N) when resizing but amortized O(1) overall. Copy move and assignment operations are O(N).
+
+6. Set: 
 
 - Insert Operation: O(N) (N = number of elements in the set).
 
@@ -90,7 +95,7 @@ The indexing phase runs at O(F * N), while search operations are approximately O
 
 - Resize Operation: O(N) (N = number of elements in the set).
 
-6. HashMap:
+7. HashMap:
 
 Used bucket chaining for collision resolution, with lazy deletion and rehashing when the load factor exceeds 0.75.
 Used [djb2](http://www.cse.yorku.ca/~oz/hash.html) for the primary hash function.
