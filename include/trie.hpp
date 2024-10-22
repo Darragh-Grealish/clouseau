@@ -21,7 +21,8 @@ public:
   Trie() : root(new TrieNode('\0')) {}
 
   void insert(const std::string &word);
-  void collect_all_words(TrieNode *node, const std::string &prefix, ArrayList<std::string> &results);
+  void collect_all_words(TrieNode *node, const std::string &prefix,
+                         ArrayList<std::string> &results);
 
   ArrayList<std::string> search(const std::string &prefix);
 };

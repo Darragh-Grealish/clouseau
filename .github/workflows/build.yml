@@ -69,7 +69,7 @@ jobs:
         cd build
         ctest --output-on-failure
 
-    # - name: Coverage Threshold Check
+    # - name: Coverage Threshold Check 
     #   if: matrix.os == 'ubuntu-latest'
     #   run: |
     #     COVERAGE=$(lcov --list ./build/coverage.info | grep 'Total:' | awk '{print $4}' | cut -d'%' -f1)

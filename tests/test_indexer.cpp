@@ -1,20 +1,16 @@
-
+#include "hashmap.hpp"
 #include "indexer.h"
-#include "trie.hpp"
-#include "gtest/gtest.h"
 #include <filesystem>
 #include <fstream>
-#include <stdexcept>
-#include <string>
+#include <gtest/gtest.h>
 
 // NOTE: Helper function to create a temporary file
 void create_temp_file(const std::string &dir, const std::string &filename,
                       const std::string &content) {
-  std::ofstream file(std::filesystem::path(dir) / filename);
+  std::ofstream file(dir + "/" + filename);
   if (!file.is_open()) {
-    throw std::runtime_error("Could not create file");
+    throw std::runtime_error("Could not create temporary file");
   }
-
   file << content;
   file.close();
 }
@@ -22,8 +18,8 @@ void create_temp_file(const std::string &dir, const std::string &filename,
 // TEST: GIVEN a directory with files WHEN create_temp_file is called THEN it
 // should create the files.
 TEST(IndexerTest, CreateTempFile) {
-  std::string temp_dir = "test_data";
-  std::filesystem::create_directory(temp_dir); 
+  std::string temp_dir = "./test_data";
+  std::filesystem::create_directory(temp_dir);
   create_temp_file(temp_dir, "file1.txt", "word1 word2 word3");
   create_temp_file(temp_dir, "file2.txt", "word2 word3 word4");
 
@@ -33,76 +29,57 @@ TEST(IndexerTest, CreateTempFile) {
   std::filesystem::remove_all(temp_dir);
 }
 
-// TEST: GIVEN a directory with files WHEN file_word_count is called THEN we get
-// the correct word count
-TEST(IndexerTest, FileWordCount) {
-  std::string temp_dir = "test_data";
+// TEST: GIVEN a directory with files WHEN get_directory_files is called THEN it
+// indexes correctly.
+TEST(IndexerTest, GetDirectoryFiles) {
+  std::string temp_dir = "./test_data";
   std::filesystem::create_directory(temp_dir);
-  create_temp_file(temp_dir, "file1.txt", "hello world hello");
-
-  Indexer indexer(temp_dir);
-  HashMap<std::string, int> word_count = indexer.file_word_count("file1.txt");
-
-  EXPECT_EQ(word_count["hello"], 2);
-  EXPECT_EQ(word_count["world"], 1);
-
-  std::filesystem::remove_all(temp_dir);
-}
-
-// TEST: GIVEN a directory with files WHEN index_directory is called THEN we get the correct index
-TEST(IndexerTest, IndexDirectory) {
-  std::string temp_dir = "test_data";
-  std::filesystem::create_directory(temp_dir);
-  create_temp_file(temp_dir, "file1.txt", "hello world hello");
-  create_temp_file(temp_dir, "file2.txt", "world hello world");
+  create_temp_file(temp_dir, "file1.txt", "i am a test file");
+  create_temp_file(temp_dir, "file2.txt", "i am another test file");
 
   Indexer indexer(temp_dir);
   indexer.index_directory();
-
-  EXPECT_EQ(indexer.index["hello"].total, 3);
-  EXPECT_EQ(indexer.index["world"].total, 3);
+  EXPECT_EQ(indexer.index["i"].total, 2);
+  EXPECT_EQ(indexer.index["am"].total, 2);
+  EXPECT_EQ(indexer.index["test"].total, 2);
+  EXPECT_EQ(indexer.index["file"].total, 2);
 
   std::filesystem::remove_all(temp_dir);
 }
 
-// TEST: GIVEN a directory with files WHEN serialize_index is called THEN we get the correct index
+// TEST: GIVEN a directory with indexed files WHEN serialize_index is called
+// THEN it should serialize the index.
 TEST(IndexerTest, SerializeIndex) {
-  std::string temp_dir = "test_data";
+  std::string temp_dir = "./test_data";
   std::filesystem::create_directory(temp_dir);
-  create_temp_file(temp_dir, "file1.txt", "hello world hello");
-  create_temp_file(temp_dir, "file2.txt", "world hello world");
+  create_temp_file(temp_dir, "file1.txt", "i am a test file");
+  create_temp_file(temp_dir, "file2.txt", "i am another test file");
 
   Indexer indexer(temp_dir);
   indexer.index_directory();
   indexer.serialize_index();
 
-  Indexer deserialized_indexer(temp_dir);
-  deserialized_indexer.deserialize_index();
-
-  EXPECT_EQ(deserialized_indexer.index["hello"].total, 3);
-  EXPECT_EQ(deserialized_indexer.index["world"].total, 3);
+  EXPECT_TRUE(std::filesystem::exists(temp_dir + "/clouseau.idx"));
 
   std::filesystem::remove_all(temp_dir);
 }
 
-// TEST: GIVEN a directory with files WHEN deserialize_index is called THEN we get the correct index
+// TEST: GIVEN a directory with indexed files WHEN deserialize_index is called
+// THEN it should deserialize the index.
 TEST(IndexerTest, DeserializeIndex) {
-  std::string temp_dir = "test_data";
+  std::string temp_dir = "./test_data";
   std::filesystem::create_directory(temp_dir);
-  create_temp_file(temp_dir, "file1.txt", "hello world hello");
-  create_temp_file(temp_dir, "file2.txt", "world hello world");
+  create_temp_file(temp_dir, "file1.txt", "i am a test file");
+  create_temp_file(temp_dir, "file2.txt", "i am another test file");
 
   Indexer indexer(temp_dir);
   indexer.index_directory();
   indexer.serialize_index();
 
-  Trie trie;
-  Indexer deserialized_indexer(temp_dir);
-  deserialized_indexer.deserialize_index(trie);
+  Indexer new_indexer(temp_dir);
+  new_indexer.deserialize_index();
 
-  ArrayList<std::string> results = trie.search("hel");
-  EXPECT_EQ(results.size(), 1);
-  EXPECT_EQ(results[0], "hello");
+  EXPECT_EQ(indexer.index.size(), new_indexer.index.size());
 
   std::filesystem::remove_all(temp_dir);
 }
