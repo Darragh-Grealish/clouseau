@@ -26,7 +26,7 @@ Indexer::Indexer(const std::string &directory) : trie(new Trie()), directory(dir
 }
 
 HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
-  std::cout << "Opening file: " << directory + "/" + file << std::endl;
+  // std::cout << "Opening file: " << directory + "/" + file << std::endl;
   HashMap<std::string, int> word_count;
   std::ifstream input(directory + "/" + file);
   if (!input.is_open()) {
@@ -60,7 +60,7 @@ HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
     }
   }
   word_count["__total_words__"] = total_words;
-  std::cout << "Total words: " << total_words << std::endl;
+  // std::cout << "Total words: " << total_words << std::endl;
   return word_count;
 }
 
@@ -245,9 +245,7 @@ void Indexer::deserialize_index_trie(Trie &trie) {
     for (auto const &file : freq.files) {
       files.push_back(file.file);
     }
-    trie.insert(word, files);
-    // std::cout << "Inserted word: " << word << std::endl;
-
+    trie.insert(word, files); // insert into trie
   }
 
   index_file.close();

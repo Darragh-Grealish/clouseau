@@ -39,7 +39,6 @@ ArrayList<std::string> Trie::autocomplete(const std::string &prefix) {
 
   ArrayList<std::string> results;
   collect_all_words(current, prefix, results);
-  std::cout << "Autocomplete results: \n" << std::endl;
   return results;
 }
 

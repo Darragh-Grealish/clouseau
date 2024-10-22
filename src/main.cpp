@@ -121,28 +121,29 @@ void autocomplete_handler(ArrayList<std::string> args) {
       int display_count = 0;
 
       while (result_count > 0) {
-        std::cout << "\nAutocomplete Results:" << std::endl;
         for (int i = 0; i < 10 && i < result_count; i++) {
           std::string word = results[display_count];
           ArrayList<std::string> files = trie.search(word);
-
+          
           std::cout << "Word: " << word << std::endl;
-          for (const std::string &file : files) {
-            std::cout << "Derived Words: " << file << std::endl; // derived words I think
-          }
-          
-          
           display_count++;
         }
 
         result_count -= 10;
 
         if (result_count > 0) {
-          std::cout << "Press [Enter] to display the next 10 results, or type 'q' to return to (Main Menu): "; 
-          std::cin >> prefix;
-          if (prefix == "q") {
-            break;
-          } 
+          while (prefix != "d" || prefix != "r") {
+            std::cout << "Type 'd' to display the next 10 results, or type 'r' to return to (Main Menu): "; 
+            std::cin >> prefix;
+            if (prefix == "d") {
+              break;
+            } else if (prefix == "r") {
+              result_count = 0;
+              break;
+            } else {
+              std::cout << "Invalid input." << std::endl;
+            }
+          }
         }
       }
     }
