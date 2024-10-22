@@ -49,7 +49,7 @@ In terms of testing and data structures, several important design choices were m
 - ArrayList: Instead of using the standard std::vector, we developed a custom ArrayList, which resizes by doubling the array size when full. This gave us more control over memory management.
 - HashMap: Our custom HashMap was built using open addressing with double hashing for collision resolution, along with lazy deletion. The array automatically rehashes and doubles in size when the load factor exceeds 0.75, improving performance during high-volume operations.
 - Set: To handle collections of unique elements effectively, we built a custom Set structure. This ensures no duplicates and provides critical features like intersections, insertions, and existence checks, optimizing operations that involve handling unique data sets.
-- Trie:  
+- Trie: To handle 
 
 
 We incorporated the GoogleTest framework for streamlined and efficient management of unit tests which are orchestrated on GitHub Actions. The tests cover the ArrayList, HashMap, and Trie data structures, ensuring the reliability and robustness of our codebase (alongside CLI and Indexer tests).
@@ -75,6 +75,8 @@ We incorporated the GoogleTest framework for streamlined and efficient managemen
 - Processing queries has a complexity of O(T * L) (T = number of tokens, L = token length).
 
 The indexing phase runs at O(F * N), while search operations are approximately O(T * L). 
+
+4. ArrayList: Using dynamic allocation, the ArrayList has a complexity of O(1) for insertion and deletion, and O(N) for resizing (doubles). Inserts are worst case O(N) when resizing but amortized O(1) overall. Copy move and assignment operations are O(N).
 
 ## References
 
