@@ -47,6 +47,7 @@ private:
 
   ArrayList<std::string>
   get_directory_files(); // Walk through directory and get all files
-  void index_selection(const ArrayList<std::string>
-                           &files); // Index a list of files (thread worker)
+  // Thread worker function to index a selection of files
+  void index_selection(const ArrayList<std::string>& files, std::atomic<int>& processed_files, int total_files); 
+
 };

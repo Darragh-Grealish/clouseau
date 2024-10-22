@@ -8,8 +8,6 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <locale>
-#include <regex>
 #include <stdexcept>
 #include <string>
 #include <sys/unistd.h>
@@ -34,7 +32,7 @@ Indexer::Indexer(const std::string &directory) {
 
   this->files = get_directory_files();
 
-  if(this->files.empty()) { // Empty dir?
+  if (this->files.empty()) { // Empty dir?
     throw std::runtime_error("No .txt files found in directory");
   }
 }
@@ -53,98 +51,168 @@ ArrayList<std::string> Indexer::get_directory_files() {
 // NOTE: Do word count for one file
 HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
   HashMap<std::string, int> word_count;
-  std::ifstream input(directory + "/" + file);
+  std::ifstream input(directory + "/" + file,
+                      std::ios::binary); // Binary mode for faster reading
   if (!input.is_open()) {
     throw std::runtime_error("Could not open file");
   }
 
-  std::string line;
+  // Pre-allocate buffers
+  const size_t BUFFER_SIZE = 16384; // 16KB buffer
+  std::string buffer;
+  buffer.reserve(BUFFER_SIZE);
+  std::string word;
+  word.reserve(100); // Reserve space for reasonably sized words
+
   int total_words = 0;
+  char c;
+  bool in_word = false;
 
-  std::locale loc;
-  std::regex word_regex(
-      R"([a-zA-Z0-9]+(?:['-][a-zA-Z0-9]+)*)"); // capture words including
-                                               // apostrophes/hyphens
-
-  while (std::getline(input, line)) {
-    std::transform(line.begin(), line.end(), line.begin(),
-                   [&](char c) { return std::tolower(c, loc); });
-
-    auto words_begin =
-        std::sregex_iterator(line.begin(), line.end(), word_regex);
-    auto words_end = std::sregex_iterator();
-
-    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-      std::string word = (*i).str();
-
-      // Ignore stopwords
-      if (!stopwords.contains(word)) {
-        word_count[word]++;
-        total_words++;
-      }
+  // Read file in chunks
+  while (input.get(c)) {
+    if (c >= 'A' && c <= 'Z') {
+      c += 32; // Fast lowercase conversion for ASCII
     }
+
+    // Check if character is valid for a word
+    bool is_valid = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
+                    (c == '\'' || c == '-');
+
+    if (is_valid) {
+      if (!in_word) {
+        word.clear();
+        in_word = true;
+      }
+      word += c;
+    }
+
+    // Word boundary found
+    else if (in_word) {
+      if (word.length() > 0) {
+        // Handle contractions and hyphenated words
+        bool valid_word = true;
+        if (word.front() == '\'' || word.front() == '-' ||
+            word.back() == '\'' || word.back() == '-') {
+          valid_word = false;
+        }
+
+        // Check for multiple hyphens/apostrophes
+        bool prev_special = false;
+        for (size_t i = 0; valid_word && i < word.length(); ++i) {
+          if (word[i] == '\'' || word[i] == '-') {
+            if (prev_special) {
+              valid_word = false;
+              break;
+            }
+            prev_special = true;
+          } else {
+            prev_special = false;
+          }
+        }
+
+        if (valid_word && !stopwords.contains(word)) {
+          word_count[word]++;
+          total_words++;
+        }
+      }
+      in_word = false;
+    }
+  }
+
+  // Process last word if file ends with word character
+  if (in_word && !stopwords.contains(word)) {
+    word_count[word]++;
+    total_words++;
   }
 
   word_count["__total_words__"] = total_words;
   return word_count;
 }
 
-// INFO: indexes a list of files (thread worker)
-void Indexer::index_selection(const ArrayList<std::string> &files) {
+void Indexer::index_selection(const ArrayList<std::string> &files,
+                              std::atomic<int> &processed_files,
+                              int total_files) {
+  HashMap<std::string, Frequency> local_index;
+
   for (const std::string &file : files) {
     HashMap<std::string, int> word_count = file_word_count(file);
     int total_words = word_count["__total_words__"];
     word_count.erase("__total_words__");
 
-    std::lock_guard<std::mutex> lock(index_mutex);
     for (auto const &pair : word_count) {
-      if (index.find(pair.key) == index.end()) {
+      FileFrequency file_freq{file, pair.value,
+                              pair.value / (double)total_words};
+
+      if (local_index.find(pair.key) == local_index.end()) {
         Frequency freq;
         freq.total = pair.value;
-        FileFrequency file_freq{file, pair.value,
-                                pair.value / (double)total_words};
         freq.files.push_back(file_freq);
-        index[pair.key] = freq;
+        local_index[pair.key] = freq;
       } else {
-        index[pair.key].total += pair.value;
-        FileFrequency file_freq{file, pair.value,
-                                pair.value / (double)total_words};
-        index[pair.key].files.push_back(file_freq);
+        local_index[pair.key].total += pair.value;
+        local_index[pair.key].files.push_back(file_freq);
       }
     }
 
-    for (auto &pair : index) {
-      pair.value.idf = std::log(files.size() / pair.value.files.size());
-      if (pair.value.idf == -INFINITY) {
-        pair.value.idf = 0;
+    // Update progress
+    int current = ++processed_files;
+    int percentage = (current * 100) / total_files;
+    std::cout << "\r" << percentage << "% (" << current << "/" << total_files
+              << " files)" << std::flush;
+  }
+
+  {
+    std::lock_guard<std::mutex> lock(index_mutex);
+    for (auto const &pair : local_index) {
+      if (index.find(pair.key) == index.end()) {
+        index[pair.key] = pair.value;
+      } else {
+        index[pair.key].total += pair.value.total;
+        for (const auto &file_freq : pair.value.files) {
+          index[pair.key].files.push_back(file_freq);
+        }
       }
     }
   }
 }
 
-// INFO: indexes all files in the directory
 void Indexer::index_directory() {
-  ArrayList<std::thread> threads;
   int num_threads = std::thread::hardware_concurrency();
   if (num_threads == 0)
     num_threads = 1;
 
-  int files_per_thread = files.size() / num_threads;
-  std::cout << "Indexing " << files_per_thread << " files per thread ("
-            << num_threads << " threads)" << std::endl;
+  ArrayList<std::thread> threads;
+  int files_per_thread = (files.size() + num_threads - 1) / num_threads;
+
+  // Atomic counter for progress tracking
+  std::atomic<int> processed_files(0);
+  int total_files = files.size();
 
   for (int i = 0; i < num_threads; i++) {
     ArrayList<std::string> thread_files;
-    for (int j = i * files_per_thread;
-         j < (i + 1) * files_per_thread && j < files.size(); j++) {
+    int start = i * files_per_thread;
+    int end = std::min(start + files_per_thread, (int)files.size());
+
+    if (start >= files.size())
+      break;
+
+    for (int j = start; j < end; j++) {
       thread_files.push_back(files[j]);
     }
-    threads.push_back(
-        std::thread(&Indexer::index_selection, this, thread_files));
+
+    threads.push_back(std::thread(&Indexer::index_selection, this, thread_files,
+                                  std::ref(processed_files), total_files));
   }
 
   for (std::thread &thread : threads) {
     thread.join();
+  }
+
+  for (auto &pair : index) {
+    pair.value.idf = std::log(files.size() / (double)pair.value.files.size());
+    if (pair.value.idf == -INFINITY) {
+      pair.value.idf = 0;
+    }
   }
 }
 
@@ -184,7 +252,7 @@ void Indexer::serialize_index() {
     }
   }
 
-  std::cout << "Index saved to " << directory + "/" + indexFile << std::endl;
+  std::cout << std::endl << "Index saved to " << directory + "/" + indexFile << std::endl;
 }
 
 void Indexer::deserialize_index() {
