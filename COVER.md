@@ -12,6 +12,7 @@
     - CLI
     - Build Setup 
 
+
 2. Darragh Grealish
     - Data Structure: Trie
     - Test: HashMap & Trie
@@ -52,9 +53,11 @@ In terms of testing and data structures, several important design choices were m
 
 - ArrayList: Instead of using the standard std::vector, we developed a custom ArrayList, which resizes by doubling the array size when full. This gave us more control over memory management.
 
-- HashMap: Our custom HashMap was built using open addressing with double hashing for collision resolution, along with lazy deletion. The array automatically rehashes and doubles in size when the load factor exceeds 0.75, improving performance during high-volume operations.
+- HashMap: Our custom HashMap was built using open addressing with double hashing for collision resolution, along with lazy deletion. The array automatically rehashes and doubles in size when the load factor exceeds 0.7, improving performance during high-volume operations.
 
 - Set: To handle collections of unique elements effectively, we built a custom Set structure. This ensures no duplicates and provides critical features like intersections, insertions, and existence checks, optimizing operations that involve handling unique data sets.
+
+- Trie: Allows us to store a character in every node, spelling out different words as we traverse down the tree. Children nodes are a HashMap with a Character & pointer to next node. Each node has children, unless it is marked "isEndOfWord", in which case it may or may not have children E.g. work, workplace. Letter 'k' can be "isEndOfWord" with a child node 'p'. insert(word) iterates through the word creating new Nodes if they don't exist. search() checks if the prefix exists, then uses collect_all_words() to gather resulting words into an ArrayList.
 
 Each of these choices was made to optimize performance, ensure scalability, and improve overall efficiency while staying true to the project’s requirements.
 
