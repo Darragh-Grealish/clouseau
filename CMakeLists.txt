@@ -73,6 +73,13 @@ target_link_libraries(test_indexer gtest gtest_main)
 gtest_discover_tests(test_indexer)
 list(APPEND TEST_TARGETS test_indexer)
 
+# TEST: Trie implementation
+add_executable(test_trie src/trie.cpp tests/test_trie.cpp)
+target_link_libraries(test_trie gtest gtest_main)
+gtest_discover_tests(test_trie)
+list(APPEND TEST_TARGETS test_trie)
+
+
 if(ENABLE_COVERAGE AND NOT MSVC)
     find_program(LCOV lcov REQUIRED)
     find_program(GENHTML genhtml REQUIRED)
