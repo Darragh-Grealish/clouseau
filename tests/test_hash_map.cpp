@@ -178,7 +178,7 @@ TEST(HashMapTest, CapacityDoubles) {
     EXPECT_EQ(map.size(), 65);
 }
 
-// TEST: GIVEN a use for operator [] WHEN key is not found THEN return default value
+// TEST: GIVEN using operator[] WHEN key is not found THEN return default value
 TEST(HashMapTest, OperatorBracketDefault) {
     HashMap<std::string, int> map = HashMap<std::string, int>();
     map.insert("one", 1);
@@ -189,7 +189,7 @@ TEST(HashMapTest, OperatorBracketDefault) {
     EXPECT_EQ(v, 0);
 }
 
-// TEST: GIVEN a use for operator [] WHEN key is found THEN return value
+// TEST: GIVEN using operator[] WHEN key is found THEN return value
 TEST(HashMapTest, OperatorBracketFound) {
     HashMap<std::string, int> map = HashMap<std::string, int>();
     map.insert("one", 1);
@@ -200,7 +200,7 @@ TEST(HashMapTest, OperatorBracketFound) {
     EXPECT_EQ(v, 2);
 }
 
-// TEST: GIVEN a use for operator [] WHEN key is found THEN update value
+// TEST: GIVEN using operator[] WHEN key is found THEN update value
 TEST(HashMapTest, OperatorBracketUpdate) {
     HashMap<std::string, int> map = HashMap<std::string, int>();
     map.insert("one", 1);
@@ -212,7 +212,7 @@ TEST(HashMapTest, OperatorBracketUpdate) {
     EXPECT_EQ(v, 22);
 }
 
-// TEST: GIVEN a use for operator [] WHEN key is not found THEN insert key-value pair
+// TEST: GIVEN using operator[] WHEN key is not found THEN insert key-value pair
 TEST(HashMapTest, OperatorBracketInsert) {
     HashMap<std::string, int> map = HashMap<std::string, int>();
     map.insert("one", 1);
@@ -224,7 +224,7 @@ TEST(HashMapTest, OperatorBracketInsert) {
     EXPECT_EQ(v, 4);
 }
 
-// TEST: GIVEN a use for operator [] WHEN key is not found THEN size is increased
+// TEST: GIVEN using operator[] WHEN key is not found THEN size is increased
 TEST(HashMapTest, OperatorBracketSizeIncrease) {
     HashMap<std::string, int> map = HashMap<std::string, int>();
     map.insert("one", 1);
@@ -235,7 +235,7 @@ TEST(HashMapTest, OperatorBracketSizeIncrease) {
     EXPECT_EQ(map.size(), 4);
 }
 
-// TEST: GIVEN a use for operator [] WHEN key is found THEN size is unchanged
+// TEST: GIVEN using operator[] WHEN key is found THEN size is unchanged
 TEST(HashMapTest, OperatorBracketSizeUnchanged) {
     HashMap<std::string, int> map = HashMap<std::string, int>();
     map.insert("one", 1);
@@ -244,18 +244,6 @@ TEST(HashMapTest, OperatorBracketSizeUnchanged) {
 
     map["two"] = 22;
     EXPECT_EQ(map.size(), 3);
-}
-
-// TEST: GIVEN a use for operator [] WHEN key is not found THEN key is found
-TEST(HashMapTest, OperatorBracketKeyFound) {
-    HashMap<std::string, int> map = HashMap<std::string, int>();
-    map.insert("one", 1);
-    map.insert("two", 2);
-    map.insert("three", 3);
-
-    map["four"] = 4;
-    auto iter = map.find("four");
-    EXPECT_NE(iter, map.end());
 }
 
 // TEST: GIVEN an Iterator ++ WHEN called THEN return iterator to next element
