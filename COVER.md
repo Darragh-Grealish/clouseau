@@ -13,8 +13,8 @@
     - Build Setup 
 
 2. Darragh Grealish
-    - Data Structure: HashMap & Trie
-    - Test: HashMaps & Trie
+    - Data Structure: Trie
+    - Test: HashMap & Trie
     - Keyword Autocomplete 
     
 
