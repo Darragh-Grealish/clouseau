@@ -96,7 +96,7 @@ void autocomplete_handler(ArrayList<std::string> args) {
 
   Trie trie;
   Indexer indexer(args[1]);
-  indexer.deserialize_index_trie(trie);
+  indexer.deserialize_index(trie);
 
   while (true) {
     std::string prefix;
