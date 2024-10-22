@@ -192,13 +192,12 @@ void autocomplete_handler(ArrayList<std::string> args) {
     if (prefix == "q") {
       break;
     }
-
     ArrayList<std::string> results = trie.search(prefix);
 
     std::cout << "Results size: " << results.size() << std::endl;
 
     if (results.size() == 0) {
-      std::cout << "No results found." << std::endl;
+      std::cout << "No keywords found for the given prefix." << std::endl;
     } else {
       int result_count = results.size();
       int display_count = 0;
