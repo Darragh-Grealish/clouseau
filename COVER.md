@@ -28,15 +28,19 @@
 1. Adam Byrne
 
 2. Darragh Grealish
+25 commits 
 
 3. Desirèe Charles
+19 commits
 
 ## Line of code
 1. Adam Byrne
 
 2. Darragh Grealish
+937 lines of code
 
 3. Desirèe Charles
+949 lines of code 
 
 ## Description 
 
@@ -56,6 +60,35 @@ In terms of testing and data structures, several important design choices were m
 
 - Set: To handle collections of unique elements effectively, we built a custom Set structure. This ensures no duplicates and provides critical features like intersections, insertions, and existence checks, optimizing operations that involve handling unique data sets.
 
+-Trie: 
+
 Each of these choices was made to optimize performance, ensure scalability, and improve overall efficiency while staying true to the project’s requirements.
 
+## Project Analysis
+This project implements a text indexing and search engine using a Trie for efficient word retrieval and multi-threading for indexing.
+
+1. Indexer Class:
+
+- File Reading (file_word_count): O(N) per file (N = characters in the file).
+
+- Indexing Directory (index_directory): O(F * N) overall (F = number of files), with concurrency reducing runtime based on available threads.
+
+- Frequency Calculation: Insertion into the index is O(M) per unique word, leading to O(F * M) for all files.
+
+2. Trie Class:
+
+- Insert Operation: O(L) per word (L = length of the word).
+
+- Search Operation: O(L) per prefix.
+
+3. Search Functionality:
+
+- Processing queries has a complexity of O(T * L) (T = number of tokens, L = token length).
+
+The indexing phase runs at O(F * N), while search operations are approximately O(T * L). 
+
 ## References
+
+Mehta, Dinesh P., and Sartaj Sahni, editors. Handbook of Data Structures and Applications. 2nd ed., Chapman and Hall/CRC, 2017.
+
+Meyers, Scott. Effective Modern C++: 42 Specific Ways to Improve Your Use of C++11 and C++14. O'Reilly Media, 2014
