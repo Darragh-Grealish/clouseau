@@ -90,6 +90,23 @@ The indexing phase runs at O(F * N), while search operations are approximately O
 
 - Resize Operation: O(N) (N = number of elements in the set).
 
+6. HashMap:
+
+Used bucket chaining for collision resolution, with lazy deletion and rehashing when the load factor exceeds 0.75.
+Used [djb2](http://www.cse.yorku.ca/~oz/hash.html) for the primary hash function.
+
+- Insert Operation: O(1) (average case), O(N) (worst case)  - Quadratic Probing
+
+- Search Operation: O(1) (average case), O(N) (worst case) - Quadratic Probing
+
+- Erase Operation: O(1) (average case), O(N) (worst case) - Quadratic Probing
+
+- Resize Operation: O(N) (N = number of elements in the map).
+
+- Rehash Operation: O(N) (N = number of elements in the map).
+
+7. Autocomplete:
+
 ## References
 
 Mehta, Dinesh P., and Sartaj Sahni, editors. Handbook of Data Structures and Applications. 2nd ed., Chapman and Hall/CRC, 2017.
