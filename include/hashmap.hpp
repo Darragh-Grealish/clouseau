@@ -141,7 +141,7 @@ public:
       }
 
       if (!buckets[index].isDeleted && buckets[index].key == key) {
-        buckets[index].isDeleted = true;
+        buckets[index].isDeleted = true; // Lazy deletion
         numElements--;
         return true;
       }
@@ -170,7 +170,7 @@ public:
 
     void findNext() {
       while (index < capacity &&
-             (!buckets[index].isOccupied || buckets[index].isDeleted)) {
+             (!buckets[index].isOccupied || buckets[index].isDeleted)) { // Check delete flag
         ++index;
       }
     }
@@ -213,7 +213,7 @@ public:
         return end();
       }
 
-      if (!buckets[index].isDeleted && buckets[index].key == key) {
+      if (!buckets[index].isDeleted && buckets[index].key == key) { // Check delete flag
         return Iterator(buckets, capacity, index);
       }
     } while (i < capacity);
