@@ -13,10 +13,10 @@
 #include <thread>
 
 #ifdef _WIN32
-    #include <direct.h>
+#include <direct.h>
 #else
-    #include <sys/unistd.h>
-    #include <unistd.h>
+#include <sys/unistd.h>
+#include <unistd.h>
 #endif
 
 Indexer::Indexer(const std::string &directory) {
@@ -187,11 +187,12 @@ void Indexer::index_directory() {
     num_threads = 1;
 
   ArrayList<std::thread> threads;
-  int files_per_thread = (files.size() + num_threads - 1) / num_threads;
+  int files_per_thread =
+      static_cast<int>(std::ceil(files.size() / (double)num_threads));
 
   // Atomic counter for progress tracking
   std::atomic<int> processed_files(0);
-  int total_files = files.size();
+  int total_files = static_cast<int>(files.size());
 
   for (int i = 0; i < num_threads; i++) {
     ArrayList<std::string> thread_files;
@@ -228,7 +229,7 @@ void Indexer::serialize_index() {
     throw std::runtime_error("Unable to open index file for writing");
   }
 
-  int num_words = index.size();
+  int num_words = static_cast<int>(index.size());
   index_file.write(reinterpret_cast<char *>(&num_words), sizeof(int));
 
   for (auto const &pair : index) {
@@ -243,7 +244,7 @@ void Indexer::serialize_index() {
     index_file.write(reinterpret_cast<const char *>(&freq.total), sizeof(int));
 
     // Write the files array
-    int files_size = freq.files.size();
+    int files_size = static_cast<int>(freq.files.size());
     index_file.write(reinterpret_cast<char *>(&files_size), sizeof(int));
     for (auto const &file_freq : freq.files) {
       // Write the file frequency
