@@ -52,6 +52,13 @@ jobs:
         lcov --remove coverage.info '/usr/*' '*/tests/*' '*/googletest/*' --output-file coverage.info
         lcov --list coverage.info
 
+    - name: Upload coverage report
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v3
+      with:
+          name: coverage-report
+          path: build/coverage.info
+
     - name: Test (Windows)
       if: matrix.os == 'windows-latest'
       run: ctest --test-dir build -C Debug --output-on-failure
