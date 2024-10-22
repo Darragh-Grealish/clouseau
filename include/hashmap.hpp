@@ -28,7 +28,7 @@ private:
     ss << key;
     std::string str = ss.str();
 
-    // INFO: DJB2 algorithm
+    // INFO: DJB2 algorith (http://www.cse.yorku.ca/~oz/hash.html)
     unsigned long hash = 5381;
     for (char c : str) {
       hash = ((hash << 5) + hash) + c;

@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <algorithm>
 
 Indexer::Indexer(const std::string &directory) {
   this->directory = directory;
