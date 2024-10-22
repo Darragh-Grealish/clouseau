@@ -19,18 +19,15 @@ void search_handler(ArrayList<std::string> args) {
     return;
   }
 
-  std::cout << "Searching: " << args[1] << std::endl;
-
   Indexer indexer(args[1]);
   indexer.deserialize_index();
 
   while (true) {
     std::string query;
-    std::cout << "==============================================" << std::endl;
-    std::cout << "Enter a search query (or 'exit' to quit): ";
+    std::cout << "Enter a search query ('q' to quit): ";
     std::getline(std::cin, query);
 
-    if (query == "exit") {
+    if (query == "q") {
       break;
     }
 
@@ -43,7 +40,7 @@ void search_handler(ArrayList<std::string> args) {
                 query.end());
 
     if (query.empty()) {
-      std::cout << "No valid input provided." << std::endl;
+      std::cout << "Invalid query." << std::endl;
       continue;
     }
 
@@ -195,16 +192,13 @@ void autocomplete_handler(ArrayList<std::string> args) {
 
   while (true) {
     std::string prefix;
-    std::cout
-        << "(Main Menu) Enter a prefix to autocomplete (or 'q' to exit): ";
+    std::cout << "Enter a prefix to autocomplete ('q' to quit): ";
     std::cin >> prefix;
 
     if (prefix == "q") {
       break;
     }
     ArrayList<std::string> results = trie.search(prefix);
-
-    std::cout << "Results size: " << results.size() << std::endl;
 
     if (results.size() == 0) {
       std::cout << "No keywords found for the given prefix." << std::endl;
@@ -224,12 +218,12 @@ void autocomplete_handler(ArrayList<std::string> args) {
 
         if (result_count > 0) {
           while (prefix != "d" || prefix != "r") {
-            std::cout << "Type 'd' to display the next 10 results, or type 'r' "
-                         "to return to (Main Menu): ";
+            std::cout << "Do you want to see more results? (y/n): ";
             std::cin >> prefix;
-            if (prefix == "d") {
+
+            if (prefix == "y") {
               break;
-            } else if (prefix == "r") {
+            } else if (prefix == "n") {
               result_count = 0;
               break;
             } else {

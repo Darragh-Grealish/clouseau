@@ -1,22 +1,23 @@
 ## Clouseau - Group 2
-1. Group Members:
-    - Adam Byrne 22338004
-    - Darragh Grealish 22347666
-    - Desirèe Charles 21188076
+
+- Adam Byrne 22338004
+- Darragh Grealish 22347666
+- Desirèe Charles 21188076
 
 ## Contributions 
+
 1. Adam Byrne
-    - Data Structure: ArrayList & HashMap
+    - Data Structures: ArrayList, HashMap
     - Test: ArrayList, CLI, Indexer
     - Document Indexing
-    - CLI
-    - Build Setup 
+    - CLI (Help text, Cmds & Args) 
+    - Build Setup (CMake, CTest & GoogleTest, GitHub Actions)
+    - Gutenberg Downloader
 
 2. Darragh Grealish
     - Data Structure: Trie
     - Test: HashMap & Trie
     - Keyword Autocomplete 
-    
 
 3. Desirèe Charles
     - Data Structure: Trie & Set
@@ -24,48 +25,35 @@
     - keyword search
     - Display Results
 
-## Number of Git Commits
-1. Adam Byrne
 
-2. Darragh Grealish
-25 commits 
+### Number of Git Commits
 
-3. Desirèe Charles
-19 commits
+- Adam Byrne: 39 commits
+- Darragh Grealish: 25 commits
+- Desirèe Charles: 19 commits
 
-## Line of code
-1. Adam Byrne
+### Lines of code
 
-2. Darragh Grealish
-937 lines of code
-
-3. Desirèe Charles
-949 lines of code 
+- Adam Byrne: additions(4604) deletions(3324)
+- Darragh Grealish: additions(947) deletions(221)
+- Desirèe Charles: additions(991) deletions(307)
 
 ## Description 
 
-Throughout the development of our project, several key decisions and trade-offs were made in alignment with the project specifications. First, the selection of a reliable book/document database was essential for ensuring both functionality and compliance. To address the potential risks of piracy and copyright violations, we chose to utilize the Project Gutenberg library, which offers a vast collection of public domain works. This decision ensured our project remained compliant with legal standards while still providing a sufficient volume of text data for the search engine.
+We needed a text source that was copyright and piracy-free, so we decided to use the Project Gutenberg library. The library contains a vast collection of books that are in the public domain. We implemented a 'download_gutenberg.py' script, located at the project root, that automates the retrieval of the top 100 books from Project Gutenberg. The script is compatible with pip for easy environment setup using the requirements.txt file. The downloaded books are stored in the `archive` subdirectory as plain text files, making them accessible for indexing.
 
-We implemented a 'download_gutenberg.py' script, located at the project root, that automates the retrieval of the top 100 books from Project Gutenberg. The script is compatible with pip for easy environment setup using the requirements.txt file. The downloaded books are stored in the archive subdirectory as plain text files, making them accessible for indexing.
-
-The indexing process is managed by the index command, which scans all documents in the archive directory and stores the index in a CSV file, also within the archive directory. The index is structured with rows that begin with a word, followed by pairs of file names and their respective word counts (e.g., word, file1 count1, file2 count2, ..., fileN countN).
+The indexing process is managed by the index command, which scans all documents in the archive directory which is serialised to `clouseau.idx` in the archive directory. The indexer calculates the TF-IDF score for each word in the document, which is then stored in the index. The index is a CSV file with rows of word, total count, file1, count1, file2, count2, ..., fileN, countN. The word is the first column, followed by the total count of the word in all files, and the subsequent columns are the file name and the count of the word in that file.
 
 In terms of testing and data structures, several important design choices were made:
 
-- GoogleTest Framework: We incorporated the GoogleTest framework for streamlined and efficient management of unit tests, ensuring robust verification of functionality.
-
 - ArrayList: Instead of using the standard std::vector, we developed a custom ArrayList, which resizes by doubling the array size when full. This gave us more control over memory management.
-
 - HashMap: Our custom HashMap was built using open addressing with double hashing for collision resolution, along with lazy deletion. The array automatically rehashes and doubles in size when the load factor exceeds 0.75, improving performance during high-volume operations.
-
 - Set: To handle collections of unique elements effectively, we built a custom Set structure. This ensures no duplicates and provides critical features like intersections, insertions, and existence checks, optimizing operations that involve handling unique data sets.
-
 - Trie: For Keyword AutoComplete we built a Trie, allowing us to traverse the tree spelling words using the given prefix. Nodes are a HashMap with a Character & pointer to next node. Nodes can be marked "isEndOfWord". Some nodes are both "isEndOfWord" and have children nodes. Complete with insert(word) & search(prefix) functions.
 
-Each of these choices was made to optimize performance, ensure scalability, and improve overall efficiency while staying true to the project’s requirements.
+We incorporated the GoogleTest framework for streamlined and efficient management of unit tests which are orchestrated on GitHub Actions. The tests cover the ArrayList, HashMap, and Trie data structures, ensuring the reliability and robustness of our codebase (alongside CLI and Indexer tests).
 
 ## Project Analysis
-This project implements a text indexing and search engine using a Trie for efficient word retrieval and multi-threading for indexing.
 
 1. Indexer Class:
 
@@ -93,15 +81,36 @@ This project implements a text indexing and search engine using a Trie for effic
 
 - Search Operation: O(L * N * 1) per prefix (L = length of prefix, N = number of nodes in subtree 1 = (amortized) HashMap look up of nodes).
 
-5. HashMap:
+5. ArrayList: Using dynamic allocation, the ArrayList has a complexity of O(1) for insertion and deletion, and O(N) for resizing (doubles). Inserts are worst case O(N) when resizing but amortized O(1) overall. Copy move and assignment operations are O(N).
 
-- Search O(1) amortized 
+6. Set: 
 
-- Erase O()
+- Insert Operation: O(N) (N = number of elements in the set).
 
-6. Arraylist:
+- Contains Operation: O(N) (N = number of elements in the set).
 
-7. Set:
+- Erase Operation: O(N) (N = number of elements in the set).
+
+- Intersect Operation: O(N * M) (N = number of elements in the current set, M = number of elements in the other set).
+
+- Resize Operation: O(N) (N = number of elements in the set).
+
+7. HashMap:
+
+Used bucket chaining for collision resolution, with lazy deletion and rehashing when the load factor exceeds 0.75.
+Used [djb2](http://www.cse.yorku.ca/~oz/hash.html) for the primary hash function.
+
+- Insert Operation: O(1) (average case), O(N) (worst case)  - Quadratic Probing
+
+- Search Operation: O(1) (average case), O(N) (worst case) - Quadratic Probing
+
+- Erase Operation: O(1) (average case), O(N) (worst case) - Quadratic Probing
+
+- Resize Operation: O(N) (N = number of elements in the map).
+
+- Rehash Operation: O(N) (N = number of elements in the map).
+
+7. Autocomplete:
 
 ## References
 

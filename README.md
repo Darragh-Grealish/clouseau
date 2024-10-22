@@ -3,7 +3,7 @@
 [![C++ Build](https://github.com/Darragh-Grealish/clouseau/actions/workflows/build.yml/badge.svg)](https://github.com/Darragh-Grealish/clouseau/actions/workflows/build.yml)
 
 Document repository search engine written in C++.
-Using CMake, ctest, C++11 and Project Gutenberg.
+Using CMake, ctest, C++17 and Project Gutenberg.
 
 ## Document repository retrieval
 
@@ -29,9 +29,8 @@ cd build
 
 # Build
 cmake ..
-make #Windows: cmake --build .
+make 
 
-# Test
 make test
 
 # Run
