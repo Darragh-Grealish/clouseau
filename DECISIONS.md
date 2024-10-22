@@ -17,6 +17,7 @@ Using the `index` command, the user can index the documents in the `archive` dir
 - GoogleTest - Using the google test framework for easier test management
 
 ## Data Structures
-
+ 
 1. ArrayList - our implementation of vector using a fixed array that resizes once full to 2x.
 2. HashMap - implemented using Open Adressing, using Double Hashing for collision prevention and Lazy Deletion. Array is rehashed & size is doubled when loadfactor > 0.75.
+3. Set - We decided to implement a custom Set to efficiently handle collections of unique elements, making sure there are no duplicates. It also offers useful features like intersections, insertions, and checking if an element exists.

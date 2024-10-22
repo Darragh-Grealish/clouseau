@@ -2,12 +2,14 @@
 #include "array_list.hpp"
 #include "hashmap.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <locale>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -25,39 +27,40 @@ Indexer::Indexer(const std::string &directory) {
 }
 
 HashMap<std::string, int> Indexer::file_word_count(const std::string &file) {
-  // std::cout << "Opening file: " << directory + "/" + file << std::endl;
   HashMap<std::string, int> word_count;
   std::ifstream input(directory + "/" + file);
   if (!input.is_open()) {
     throw std::runtime_error("Could not open file");
   }
+
   std::string line;
   int total_words = 0;
-  while (std::getline(input, line)) {
-    std::string clean_word;
 
-    for (char &c : line) {
-      if (std::isalnum(c, std::locale()) || c == '\'' || c == '-') {
-        clean_word += std::tolower(c, std::locale());
-      } else {
-        if (!clean_word.empty()) {
-          // std::cout << "Found word: " << clean_word << std::endl;
-          word_count[clean_word]++;
-          total_words++;
-          clean_word.clear();
-        }
+  std::locale loc;
+  std::regex word_regex(
+      R"([a-zA-Z0-9]+(?:['-][a-zA-Z0-9]+)*)"); // Regex to capture words,
+                                               // including apostrophes/hyphens
+
+  while (std::getline(input, line)) {
+    std::transform(line.begin(), line.end(), line.begin(), [&](char c) {
+      return std::tolower(c, loc); // Convert entire line to lowercase
+    });
+
+    auto words_begin =
+        std::sregex_iterator(line.begin(), line.end(), word_regex);
+    auto words_end = std::sregex_iterator();
+
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+      std::string word = (*i).str();
+
+      // Ignore stopwords
+      if (!stopwords.contains(word)) {
+        word_count[word]++;
+        total_words++;
       }
     }
-
-    clean_word.erase(std::remove(clean_word.begin(), clean_word.end(), ','),
-                     clean_word.end());
-
-    if (!clean_word.empty()) {
-      // std::cout << "Found word: " << clean_word << std::endl;
-      word_count[clean_word]++;
-      total_words++;
-    }
   }
+
   word_count["__total_words__"] = total_words;
   // std::cout << "Total words: " << total_words << std::endl;
   return word_count;
@@ -95,18 +98,21 @@ void Indexer::index_directory() {
 
       for (auto &pair : index) {
         pair.value.idf = std::log(files.size() / pair.value.files.size());
+        if (pair.value.idf == -INFINITY) {
+          pair.value.idf = 0;
+        }
       }
     }
   };
 
   int num_threads = std::thread::hardware_concurrency();
-  if (num_threads == 0) {
+  if (num_threads == 0)
     num_threads = 1;
-  }
-  std::cout << "Indexing " << files.size() << " files with " << num_threads
-            << " threads" << std::endl;
 
   int files_per_thread = files.size() / num_threads;
+  std::cout << "Indexing " << files_per_thread << " files per thread ("
+            << num_threads << " threads)" << std::endl;
+
   for (int i = 0; i < num_threads; i++) {
     ArrayList<std::string> thread_files;
     for (int j = i * files_per_thread;
@@ -143,8 +149,6 @@ void Indexer::serialize_index() {
 
   std::cout << "Index written to " << indexFile << std::endl;
 }
-
-HashMap<std::string, Frequency> Indexer::get_index() { return index; }
 
 void Indexer::deserialize_index() {
   std::ifstream index_file(directory + "/" + indexFile);

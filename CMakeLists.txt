@@ -63,6 +63,12 @@ target_link_libraries(test_hash_map gtest gtest_main)
 gtest_discover_tests(test_hash_map)
 list(APPEND TEST_TARGETS test_hash_map)
 
+# TEST: Set implementation
+add_executable(test_set tests/test_set.cpp)  
+target_link_libraries(test_set gtest gtest_main)  
+gtest_discover_tests(test_set)  
+list(APPEND TEST_TARGETS test_set) 
+
 # TEST: Indexer implementation
 add_executable(test_indexer 
     tests/test_indexer.cpp 
