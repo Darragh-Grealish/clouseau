@@ -7,9 +7,10 @@
 // NOTE: Helper function to create a temporary file
 void create_temp_file(const std::string &dir, const std::string &filename,
                       const std::string &content) {
-  std::ofstream file(dir + "/" + filename);
+  std::filesystem::path filePath = std::filesystem::path(dir) / filename;
+  std::ofstream file(filePath);
   if (!file.is_open()) {
-    throw std::runtime_error("Could not create temporary file");
+    throw std::runtime_error("Could not create temporary file: " + filePath.string());
   }
   file << content;
   file.close();
@@ -19,7 +20,7 @@ void create_temp_file(const std::string &dir, const std::string &filename,
 // should create the files.
 TEST(IndexerTest, CreateTempFile) {
   std::string temp_dir = "./test_data";
-  std::filesystem::create_directory(temp_dir);
+  std::filesystem::create_directory(temp_dir); // Check for success if needed
   create_temp_file(temp_dir, "file1.txt", "word1 word2 word3");
   create_temp_file(temp_dir, "file2.txt", "word2 word3 word4");
 
